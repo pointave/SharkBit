@@ -15,7 +15,7 @@ An efficient video tool for cycling through videos and making precise trims or c
 | `Y`         | Pull-out window                                             |
 | `A / S`     | Step down / up one frame                                    |
 | `D / F`     | Jump 113 frames (Shift/Ctrl doubles/quadruples jump amount) |
-| `G`         | Jump to random frame                                        |
+| `G`         | Toggle random sorting                                       |
 | `H`         | Remove crop selection                                       |
 | `Z`         | Toggle trim preview                                         |
 | `X`         | Auto-advance toggle                                         |
