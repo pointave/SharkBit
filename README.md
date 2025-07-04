@@ -64,6 +64,8 @@ To change the default location:
 
 * [PyQt](https://riverbankcomputing.com/software/pyqt/)
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+* OpenCV
+* Ffmpeg
 
 ---
 
