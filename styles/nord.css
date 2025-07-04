@@ -1,0 +1,35 @@
+/* Nord Theme */
+QWidget {
+    background-color: #2e3440;
+    color: #d8dee9;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #3b4252;
+    color: #eceff4;
+    border: 1px solid #4c566a;
+}
+QPushButton:hover {
+    background-color: #5e81ac;
+    color: #eceff4;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #88c0d0;
+    selection-color: #2e3440;
+}
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #3b4252;
+    border: 1px solid #4c566a;
+}
+QSlider::groove:horizontal, QSlider::groove:vertical {
+    background: #4c566a;
+}
+QSlider::handle:horizontal, QSlider::handle:vertical {
+    background: #88c0d0;
+    border: 1px solid #4c566a;
+}
+QTreeWidget {
+    alternate-background-color: #3b4252;
+}
+QLabel#status_label {
+    color: #88c0d0;
+}

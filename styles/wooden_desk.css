@@ -1,0 +1,29 @@
+/* Wooden Desk Theme */
+QWidget {
+    background-color: #deb887;
+    color: #5b3a1b;
+    font-family: 'Merriweather', 'Georgia', serif;
+    font-size: 16px;
+    background-image: url('wood_texture.png');
+    background-repeat: repeat;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #fff8f0;
+    color: #5b3a1b;
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 16px;
+}
+QPushButton:hover {
+    background-color: #b8860b;
+    color: #fff8f0;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-color: #fff8f0;
+}
+QLabel#status_label {
+    color: #b8860b;
+    font-weight: bold;
+}
+/* Place a seamless wood_texture.png in the styles folder for best effect. */

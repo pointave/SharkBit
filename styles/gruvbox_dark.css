@@ -1,0 +1,35 @@
+/* Gruvbox Dark Theme */
+QWidget {
+    background-color: #282828;
+    color: #ebdbb2;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #3c3836;
+    color: #ebdbb2;
+    border: 1px solid #504945;
+}
+QPushButton:hover {
+    background-color: #b8bb26;
+    color: #282828;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #b8bb26;
+    selection-color: #282828;
+}
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #3c3836;
+    border: 1px solid #504945;
+}
+QSlider::groove:horizontal, QSlider::groove:vertical {
+    background: #504945;
+}
+QSlider::handle:horizontal, QSlider::handle:vertical {
+    background: #b8bb26;
+    border: 1px solid #504945;
+}
+QTreeWidget {
+    alternate-background-color: #3c3836;
+}
+QLabel#status_label {
+    color: #b8bb26;
+}

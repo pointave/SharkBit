@@ -1,0 +1,33 @@
+/* Animated Neon Theme */
+QWidget {
+    background-color: #0f0c29;
+    color: #f5f5f5;
+    font-family: 'Orbitron', 'Arial', sans-serif;
+    font-size: 16px;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #24243e;
+    color: #f5f5f5;
+    border: 2px solid #00ffe7;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 16px;
+    box-shadow: 0 0 10px #00ffe7, 0 0 20px #ff00cc inset;
+    transition: box-shadow 0.5s, border-color 0.5s;
+}
+QPushButton:hover {
+    background-color: #ff00cc;
+    color: #fff;
+    border-color: #fff;
+    box-shadow: 0 0 20px #ff00cc, 0 0 40px #00ffe7 inset;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #00ffe7;
+    selection-color: #0f0c29;
+}
+QLabel#status_label {
+    color: #00ffe7;
+    font-weight: bold;
+    text-shadow: 0 0 10px #ff00cc;
+}
+/* For true animation, use QPropertyAnimation in Python code. */

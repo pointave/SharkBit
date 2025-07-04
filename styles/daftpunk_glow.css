@@ -1,0 +1,32 @@
+/* Daft Punk Glow Theme */
+QWidget {
+    background-color: #000013;
+    color: #ffe066;
+    font-family: 'Orbitron', 'Arial', sans-serif;
+    font-size: 18px;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #1a1a2e;
+    color: #ffe066;
+    border: 2px solid #ffe066;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 18px;
+    box-shadow: 0 0 16px #00f2fe, 0 0 30px #f7971e inset;
+    transition: box-shadow 0.5s, border-color 0.5s;
+}
+QPushButton:hover {
+    background-color: #ffe066;
+    color: #1a1a2e;
+    border-color: #00f2fe;
+    box-shadow: 0 0 30px #ffe066, 0 0 60px #00f2fe inset;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #00f2fe;
+    selection-color: #000013;
+}
+QLabel#status_label {
+    color: #00f2fe;
+    font-weight: bold;
+    text-shadow: 0 0 8px #ffe066;
+}

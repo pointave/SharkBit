@@ -1,0 +1,11 @@
+PyQt6
+opencv-python
+ffmpeg-python
+numpy
+#for monitoring
+py-cpuinfo
+psutil
+pynvml
+Pillow
+deepdiff
+piexif

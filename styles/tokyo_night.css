@@ -1,0 +1,34 @@
+/* Tokyo Night Theme */
+QWidget {
+    background-color: #1a1b26;
+    color: #a9b1d6;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #24283b;
+    color: #a9b1d6;
+    border: 1px solid #414868;
+}
+QPushButton:hover {
+    background-color: #414868;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #7aa2f7;
+    selection-color: #1a1b26;
+}
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #24283b;
+    border: 1px solid #414868;
+}
+QSlider::groove:horizontal, QSlider::groove:vertical {
+    background: #414868;
+}
+QSlider::handle:horizontal, QSlider::handle:vertical {
+    background: #7aa2f7;
+    border: 1px solid #414868;
+}
+QTreeWidget {
+    alternate-background-color: #24283b;
+}
+QLabel#status_label {
+    color: #7aa2f7;
+}

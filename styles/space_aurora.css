@@ -1,0 +1,29 @@
+/* Space Aurora Theme */
+QWidget {
+    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #0f2027, stop:0.5 #2c5364, stop:1 #00c6fb);
+    color: #b2fcff;
+    font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    font-size: 17px;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: rgba(44,83,100,0.8);
+    color: #b2fcff;
+    border: 2px solid #00c6fb;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 17px;
+    box-shadow: 0 0 12px #00c6fb;
+    transition: box-shadow 0.6s;
+}
+QPushButton:hover {
+    background-color: #00c6fb;
+    color: #0f2027;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #b2fcff;
+    selection-color: #0f2027;
+}
+QLabel#status_label {
+    color: #00c6fb;
+    font-weight: bold;
+}

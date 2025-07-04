@@ -1,0 +1,34 @@
+/* Solarized Dark Theme */
+QWidget {
+    background-color: #002b36;
+    color: #839496;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #073642;
+    color: #93a1a1;
+    border: 1px solid #586e75;
+}
+QPushButton:hover {
+    background-color: #586e75;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #b58900;
+    selection-color: #002b36;
+}
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #073642;
+    border: 1px solid #586e75;
+}
+QSlider::groove:horizontal, QSlider::groove:vertical {
+    background: #586e75;
+}
+QSlider::handle:horizontal, QSlider::handle:vertical {
+    background: #b58900;
+    border: 1px solid #586e75;
+}
+QTreeWidget {
+    alternate-background-color: #073642;
+}
+QLabel#status_label {
+    color: #b58900;
+}

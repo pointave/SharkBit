@@ -1,0 +1,34 @@
+/* Monokai Theme */
+QWidget {
+    background-color: #272822;
+    color: #f8f8f2;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #383830;
+    color: #f8f8f2;
+    border: 1px solid #75715e;
+}
+QPushButton:hover {
+    background-color: #75715e;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #a6e22e;
+    selection-color: #272822;
+}
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #383830;
+    border: 1px solid #75715e;
+}
+QSlider::groove:horizontal, QSlider::groove:vertical {
+    background: #75715e;
+}
+QSlider::handle:horizontal, QSlider::handle:vertical {
+    background: #a6e22e;
+    border: 1px solid #75715e;
+}
+QTreeWidget {
+    alternate-background-color: #383830;
+}
+QLabel#status_label {
+    color: #a6e22e;
+}

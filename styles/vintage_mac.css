@@ -1,0 +1,27 @@
+/* Vintage Mac Theme */
+QWidget {
+    background-color: #c0c0c0;
+    color: #000000;
+    font-family: 'Chicago', 'Arial', sans-serif;
+    font-size: 15px;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #e0e0e0;
+    color: #000000;
+    border: 2px outset #ffffff;
+    border-radius: 0px;
+    font-family: inherit;
+    font-size: 15px;
+    box-shadow: 2px 2px 0 #808080;
+}
+QPushButton:hover {
+    background-color: #b0b0b0;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #000080;
+    selection-color: #ffffff;
+}
+QLabel#status_label {
+    color: #000080;
+    font-weight: bold;
+}

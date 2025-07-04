@@ -1,0 +1,30 @@
+/* Origami Fold Theme */
+QWidget {
+    background-color: #f7fff7;
+    color: #2d6a4f;
+    font-family: 'Quicksand', 'Arial', sans-serif;
+    font-size: 17px;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #e9fffd;
+    color: #2d6a4f;
+    border: 2px dashed #52b788;
+    border-radius: 0px;
+    font-family: inherit;
+    font-size: 17px;
+    box-shadow: 2px 2px 0 #b7e4c7;
+    transition: border-color 0.4s;
+}
+QPushButton:hover {
+    background-color: #b7e4c7;
+    color: #081c15;
+    border-color: #40916c;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #52b788;
+    selection-color: #f7fff7;
+}
+QLabel#status_label {
+    color: #40916c;
+    font-weight: bold;
+}

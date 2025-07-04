@@ -1,0 +1,27 @@
+/* Pastel Bliss Theme */
+QWidget {
+    background-color: #f6e7ff;
+    color: #6c3483;
+    font-family: 'Quicksand', 'Arial', sans-serif;
+    font-size: 16px;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #ffe6fa;
+    color: #6c3483;
+    border: 2px solid #b2bec3;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 16px;
+}
+QPushButton:hover {
+    background-color: #b2bec3;
+    color: #ffe6fa;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #a29bfe;
+    selection-color: #f6e7ff;
+}
+QLabel#status_label {
+    color: #00b894;
+    font-weight: bold;
+}

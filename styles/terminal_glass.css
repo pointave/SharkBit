@@ -1,0 +1,32 @@
+/* Terminal Glass Theme */
+QWidget {
+    background-color: rgba(20, 20, 20, 0.9);
+    color: #39ff14;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    font-size: 15px;
+    border-radius: 0;
+    /* backdrop-filter not supported in Qt */
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: rgba(40, 40, 40, 0.7);
+    color: #39ff14;
+    border: 2px solid #39ff14;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 15px;
+    /* box-shadow not supported in Qt */
+}
+QPushButton:hover {
+    background-color: #39ff14;
+    color: #141414;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #39ff14;
+    selection-color: #141414;
+}
+QLabel#status_label {
+    color: #39ff14;
+    font-weight: bold;
+    text-shadow: 0 0 8px #39ff14;
+}
+/* Note: For full glass effect, run on Windows 10+ with composition enabled. */

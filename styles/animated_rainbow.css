@@ -1,0 +1,30 @@
+/* Animated Rainbow Theme */
+QWidget {
+    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #ff9a9e, stop:0.2 #fad0c4, stop:0.4 #fbc2eb, stop:0.6 #a1c4fd, stop:0.8 #c2ffd8, stop:1 #fcb69f);
+    color: #222;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    font-size: 16px;
+    animation: rainbow-bg 10s linear infinite;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: rgba(255,255,255,0.7);
+    color: #222;
+    border: 2px solid #ff9a9e;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 16px;
+    transition: background 0.4s;
+}
+QPushButton:hover {
+    background-color: #ff9a9e;
+    color: #fff;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #a1c4fd;
+    selection-color: #222;
+}
+QLabel#status_label {
+    color: #fbc2eb;
+    font-weight: bold;
+}
+/* Note: PyQt does not support @keyframes in CSS, but you can animate with QPropertyAnimation in code for advanced effects. */
