@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QSizePolicy, QMessageBox
 import os
+import cv2
 
 def keyPressEvent(self, event):
         # Q always quits the app, even in preview mode
