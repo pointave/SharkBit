@@ -67,4 +67,3 @@ To change the default location:
 
 ---
 
-Let me know if you want this saved as a `.md` file or edited further.
