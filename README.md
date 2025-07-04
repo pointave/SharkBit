@@ -1,7 +1,3 @@
-Certainly! Here's a well-formatted Markdown version of the information you provided:
-
----
-
 # SharkBit
 
 An efficient video tool for cycling through videos and making precise trims or captures, with intuitive keyboard shortcuts.
