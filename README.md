@@ -12,7 +12,7 @@ An efficient video tool for cycling through videos and making precise trims or c
 | `W`         | Open current folder                                         |
 | `E / R`     | Previous / Next file in list                                |
 | `T`         | Fullscreen toggle                                           |
-| `Y`         | Pull-out window                                             |
+| `Y / Enter` | Pull-out window                                             |
 | `A / S`     | Step down / up one frame                                    |
 | `D / F`     | Jump 113 frames (Shift/Ctrl doubles/quadruples jump amount) |
 | `G`         | Toggle random sorting                                       |
@@ -23,6 +23,7 @@ An efficient video tool for cycling through videos and making precise trims or c
 | `V`         | Play / Pause                                                |
 | `B`         | Save clip (cropped or uncropped)                            |
 | `/`         | Search                                                      |
+| `\`         | Refresh                                                     |
 | `Backspace` | Minimize                                                    |
 
 > **Tip:** To have more videos playing at once, **Ctrl+click** on two or more videos in the file list.
