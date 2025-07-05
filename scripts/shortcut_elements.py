@@ -21,6 +21,12 @@ def keyPressEvent(self, event):
             self.loader.clear_crop_region()
             self.update_status("Crop cleared")
             return
+        # --- Trigger refresh on \ key ---
+        elif event.key() == Qt.Key.Key_Backslash:
+            if hasattr(self, 'loader'):
+                self.loader.load_folder_contents()
+                self.update_status("Folder refreshed")
+            return
         # --- Preview Mode Toggle ---
         if event.key() == Qt.Key.Key_Y and event.modifiers() == Qt.KeyboardModifier.NoModifier:
             if not hasattr(self, '_preview_mode'):
