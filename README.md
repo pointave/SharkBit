@@ -4,14 +4,51 @@ SharkBit is a desktop application for video cropping, editing, and exporting, wi
 
 ---
 
+## 🔑 Shortcuts
+
+| Key         | Action                                                      |
+| ----------- | ----------------------------------------------------------- |
+| `Q`         | Close program                                               |
+| `W`         | Open current folder                                         |
+| `E / R`     | Previous / Next file in list                                |
+| `T`         | Fullscreen toggle                                           |
+| `Y`         | Pull-out window                                             |
+| `A / S`     | Step down / up one frame                                    |
+| `D / F`     | Jump 113 frames (Shift/Ctrl doubles/quadruples jump amount) |
+| `G`         | Toggle random sorting                                       |
+| `H`         | Remove crop selection                                       |
+| `Z`         | Toggle trim preview                                         |
+| `X`         | Auto-advance toggle                                         |
+| `C`         | Screenshot                                                  |
+| `V`         | Play / Pause                                                |
+| `B`         | Save clip (cropped or uncropped)                            |
+| `/`         | Search                                                      |
+| `Backspace` | Minimize                                                    |
+
+> **Tip:** To have more videos playing at once, **Ctrl+click** on two or more videos in the file list.
+
+---
+
+## 🛠️ Installation
+
+```bash
+git clone https://github.com/pointave/SharkBit
+cd sharkbit
+conda create -n sharkbit python=3.12 -y
+conda activate sharkbit
+pip install -r requirements.txt
+```
+
+> **Optional:** Add `yt-dlp.exe` to the `sharkbit` folder to enable YouTube downloads.
+
+---
+
 ## Features
 - **Graphical Video Cropping**: Interactive crop region selection with drag-and-resize controls.
 - **Scene Detection & Navigation**: Custom slider and navigation for video scenes.
 - **Customizable UI**: Multiple retro and modern themes, icon sets, and layout options.
 - **Session Restore**: Remembers your last session, folders, and settings.
 - **System Monitoring**: Built-in CPU/GPU monitoring for heavy processing tasks.
-
----
 
 ---
 
@@ -34,13 +71,11 @@ See `requirements.txt` for full list. Key packages:
 
 ---
 
-## License
-See `LICENSE` for details.
-
----
-
 ## Credits
-- Developed by PointAve
+* [PyQt](https://riverbankcomputing.com/software/pyqt/)
+* [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+* OpenCV
+* Ffmpeg
 
 ---
 
