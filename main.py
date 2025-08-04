@@ -7,10 +7,10 @@ if __name__ == "__main__":
     start = time.time()
     app = QApplication(sys.argv)
     
-    # Load the dark mode stylesheet from a file
-    with open("styles/one_dark.css", "r") as file:
-        dark_stylesheet = file.read()
-    app.setStyleSheet(dark_stylesheet)
+    # Load the retro arcade stylesheet from a file
+    with open("styles/minimal/pure_dark.css", "r") as file:
+        retro_stylesheet = file.read()
+    app.setStyleSheet(retro_stylesheet)
     
     try:
         window = VideoCropper()

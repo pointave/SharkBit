@@ -1,0 +1,29 @@
+/* Animated Bubblegum Theme */
+QWidget {
+    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #ffb6b9, stop:0.5 #fae3d9, stop:1 #bbded6);
+    color: #ff6f91;
+    font-family: 'Baloo', 'Comic Sans MS', cursive, sans-serif;
+    font-size: 17px;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #fff0f6;
+    color: #ff6f91;
+    border: 2px solid #ffb6b9;
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 17px;
+    transition: background 0.5s;
+}
+QPushButton:hover {
+    background-color: #ffb6b9;
+    color: #fff;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #bbded6;
+    selection-color: #ff6f91;
+}
+QLabel#status_label {
+    color: #6a0572;
+    font-weight: bold;
+}
+/* For true animation, use QPropertyAnimation in Python code. */

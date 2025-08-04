@@ -1,0 +1,239 @@
+/* Cosmic Dream Theme - Enhanced Deep Space Aesthetic */
+QWidget {
+    background-color: #0B0B23;
+    color: #E6E6FA;
+    font-family: 'Orbitron', 'Arial', sans-serif;
+    font-size: 11px;
+}
+
+QPushButton {
+    background-color: #8B7EC8;
+    color: #FFFFFF;
+    border: 2px solid #DDA0DD;
+    border-radius: 15px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 11px;
+    box-shadow: 0 0 20px rgba(139, 126, 200, 0.6), 0 0 40px rgba(221, 160, 221, 0.3);
+}
+
+QPushButton:hover {
+    background-color: #DDA0DD;
+    color: #1A1A3A;
+    border-color: #FFB6C1;
+    box-shadow: 0 0 30px rgba(221, 160, 221, 0.8), 0 0 60px rgba(255, 182, 193, 0.4);
+}
+
+QPushButton:pressed {
+    background-color: #2D2D5A;
+    color: #DDA0DD;
+    border-color: #8B7EC8;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+QLineEdit, QComboBox, QSpinBox {
+    background-color: rgba(74, 74, 138, 0.9);
+    color: #E6E6FA;
+    border: 2px solid #8B7EC8;
+    border-radius: 12px;
+    padding: 6px 12px;
+    selection-background-color: #DDA0DD;
+    selection-color: #1A1A3A;
+    box-shadow: 0 0 15px rgba(139, 126, 200, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border-color: #DDA0DD;
+    box-shadow: 0 0 25px rgba(221, 160, 221, 0.7), 0 0 40px rgba(139, 126, 200, 0.5);
+}
+
+QListWidget {
+    background-color: rgba(45, 45, 90, 0.95);
+    color: #E6E6FA;
+    border: 2px solid #8B7EC8;
+    border-radius: 15px;
+    alternate-background-color: rgba(74, 74, 138, 0.4);
+    padding: 6px;
+    box-shadow: 0 0 20px rgba(139, 126, 200, 0.4), inset 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+QListWidget::item {
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin: 2px;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+QListWidget::item:selected {
+    background-color: #8B7EC8;
+    color: #1A1A3A;
+    font-weight: 600;
+    box-shadow: 0 0 15px rgba(139, 126, 200, 0.6);
+    border: 1px solid #FFB6C1;
+}
+
+QListWidget::item:hover {
+    background-color: rgba(139, 126, 200, 0.3);
+    color: #FFFFFF;
+    border: 1px solid rgba(221, 160, 221, 0.6);
+    box-shadow: 0 0 10px rgba(139, 126, 200, 0.4);
+}
+
+QSlider::groove:horizontal {
+    background-color: #2D2D5A;
+    height: 10px;
+    border: 2px solid #8B7EC8;
+    border-radius: 5px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+QSlider::handle:horizontal {
+    background-color: #DDA0DD;
+    width: 20px;
+    height: 20px;
+    margin: -5px 0;
+    border-radius: 10px;
+    border: 2px solid #FFB6C1;
+    box-shadow: 0 0 15px rgba(221, 160, 221, 0.6);
+}
+
+QSlider::handle:horizontal:hover {
+    background-color: #FFB6C1;
+    box-shadow: 0 0 20px rgba(255, 182, 193, 0.8);
+}
+
+QCheckBox {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: #E6E6FA;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    background-color: #4A4A8A;
+    border: 2px solid #8B7EC8;
+    border-radius: 4px;
+    box-shadow: 0 0 8px rgba(139, 126, 200, 0.4);
+}
+
+QCheckBox::indicator:checked {
+    background-color: #DDA0DD;
+    border-color: #FFB6C1;
+    box-shadow: 0 0 12px rgba(221, 160, 221, 0.6);
+}
+
+QTreeWidget {
+    background-color: rgba(45, 45, 90, 0.95);
+    color: #E6E6FA;
+    border: 2px solid #8B7EC8;
+    border-radius: 15px;
+    alternate-background-color: rgba(74, 74, 138, 0.3);
+    box-shadow: 0 0 20px rgba(139, 126, 200, 0.4);
+}
+
+QTreeWidget::item:selected {
+    background-color: #8B7EC8;
+    color: #1A1A3A;
+    font-weight: 600;
+}
+
+QTreeWidget::item:hover {
+    background-color: rgba(139, 126, 200, 0.3);
+    color: #FFFFFF;
+}
+
+QGraphicsView {
+    background-color: #4A4A8A;
+    border: 2px solid #8B7EC8;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(139, 126, 200, 0.4), inset 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+QProgressBar {
+    background-color: #2D2D5A;
+    border: 2px solid #8B7EC8;
+    border-radius: 12px;
+    text-align: center;
+    color: #E6E6FA;
+    font-weight: 600;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+QProgressBar::chunk {
+    background-color: #DDA0DD;
+    border-radius: 10px;
+    margin: 2px;
+    box-shadow: 0 0 10px rgba(221, 160, 221, 0.5);
+}
+
+QScrollBar:vertical {
+    background-color: #2D2D5A;
+    width: 14px;
+    border-radius: 7px;
+    margin: 0;
+    border: 1px solid #8B7EC8;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #8B7EC8;
+    border-radius: 7px;
+    min-height: 25px;
+    margin: 2px;
+    box-shadow: 0 0 8px rgba(139, 126, 200, 0.5);
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #DDA0DD;
+    box-shadow: 0 0 12px rgba(221, 160, 221, 0.6);
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background-color: #2D2D5A;
+    height: 14px;
+    border-radius: 7px;
+    margin: 0;
+    border: 1px solid #8B7EC8;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #8B7EC8;
+    border-radius: 7px;
+    min-width: 25px;
+    margin: 2px;
+    box-shadow: 0 0 8px rgba(139, 126, 200, 0.5);
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #DDA0DD;
+    box-shadow: 0 0 12px rgba(221, 160, 221, 0.6);
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* Special styling for monitoring label */
+QLabel#monitoring_label {
+    background-color: rgba(221, 160, 221, 0.9);
+    color: #1A1A3A;
+    border: 2px solid #FFB6C1;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 12px;
+    box-shadow: 0 0 15px rgba(221, 160, 221, 0.6);
+}
+
+QLabel#status_label {
+    color: #DDA0DD;
+    font-weight: bold;
+    font-size: 13px;
+    text-shadow: 0 0 8px rgba(221, 160, 221, 0.6);
+} 

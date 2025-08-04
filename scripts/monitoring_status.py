@@ -10,15 +10,27 @@ def get_monitoring_status():
     status = hw.getStatus()
     # Format for display (first GPU only)
     gpu = status['gpus'][0] if status['gpus'] else {}
-    vram_percent = gpu.get('vram_used_percent', '-')
+    gpu_util = gpu.get('gpu_utilization', None)
+    vram_percent = gpu.get('vram_used_percent', None)
     try:
         vram_percent = round(float(vram_percent), 1)
     except (ValueError, TypeError):
-        vram_percent = '-'
-    gpu_str = f"GPU: {gpu.get('gpu_utilization', '-')}% | VRAM: {vram_percent}%" if gpu else "GPU: N/A | VRAM: N/A"
+        vram_percent = None
+
+    # Improved feedback
+    if gpu_util in (-1, None):
+        gpu_str = "GPU: No NVIDIA GPU found"
+    else:
+        gpu_str = f"GPU: {gpu_util}%"
+
+    if vram_percent in (-1, None):
+        vram_str = "VRAM: N/A"
+    else:
+        vram_str = f"VRAM: {vram_percent}%"
+
     cpu_str = f"CPU: {status.get('cpu_utilization', '-')}%"
     ram_str = f"RAM: {status.get('ram_used_percent', '-')}%"
-    return f"{gpu_str} | {cpu_str} | {ram_str}"
+    return f"{gpu_str} | {vram_str} | {cpu_str} | {ram_str}"
 
 if __name__ == "__main__":
     print(get_monitoring_status())

@@ -1,0 +1,134 @@
+/* Animated Neon Theme - Improved */
+QWidget {
+    background-color: #0f0c29;
+    color: #f5f5f5;
+    font-family: 'Orbitron', 'Arial', sans-serif;
+    font-size: 11px;
+}
+
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #24243e;
+    color: #f5f5f5;
+    border: 2px solid #00ffe7;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 11px;
+    box-shadow: 0 0 10px #00ffe7, 0 0 20px #ff00cc inset;
+}
+
+QPushButton:hover {
+    background-color: #ff00cc;
+    color: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0 0 20px #ff00cc, 0 0 40px #00ffe7 inset;
+}
+
+QPushButton:pressed {
+    background-color: #cc0099;
+    color: #ffffff;
+    border-color: #00ffe7;
+}
+
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #00ffe7;
+    selection-color: #0f0c29;
+    background-color: #2a2a4e;
+    color: #ffffff;
+}
+
+QListWidget {
+    background-color: #24243e;
+    color: #f5f5f5;
+    alternate-background-color: #2a2a4e;
+    border: 2px solid #00ffe7;
+}
+
+QListWidget::item:selected {
+    background-color: #ff00cc;
+    color: #ffffff;
+}
+
+QListWidget::item:hover {
+    background-color: rgba(255, 0, 204, 0.2);
+    color: #f5f5f5;
+}
+
+QSlider::groove:horizontal {
+    background-color: #2a2a4e;
+    height: 8px;
+    border: 1px solid #00ffe7;
+    border-radius: 4px;
+}
+
+QSlider::handle:horizontal {
+    background-color: #ff00cc;
+    width: 18px;
+    height: 18px;
+    margin: -5px 0;
+    border-radius: 9px;
+    border: 2px solid #00ffe7;
+    box-shadow: 0 0 12px #ff00cc;
+}
+
+QCheckBox {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    background-color: #24243e;
+    border: 2px solid #00ffe7;
+    border-radius: 4px;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #ff00cc;
+    border-color: #ff00cc;
+    box-shadow: 0 0 12px #ff00cc;
+}
+
+QLabel#status_label {
+    color: #00ffe7;
+    font-weight: bold;
+    background-color: #24243e;
+    border: 2px solid #00ffe7;
+    padding: 8px;
+    border-radius: 8px;
+    text-shadow: 0 0 8px #00ffe7;
+}
+
+/* Special styling for monitoring label */
+QLabel#monitoring_label {
+    color: #00ffe7 !important;
+    font-weight: bold !important;
+    background-color: #24243e !important;
+    border: 2px solid #00ffe7 !important;
+    padding: 8px !important;
+    border-radius: 8px !important;
+    text-shadow: 0 0 8px #00ffe7 !important;
+    font-size: 12px !important;
+}
+
+QGraphicsView {
+    background-color: #0f0c29;
+    border: 2px solid #00ffe7;
+    border-radius: 10px;
+}
+
+QProgressBar {
+    background-color: #24243e;
+    border: 2px solid #00ffe7;
+    border-radius: 8px;
+    text-align: center;
+    color: #f5f5f5;
+    font-weight: bold;
+}
+
+QProgressBar::chunk {
+    background-color: #ff00cc;
+    border-radius: 6px;
+    box-shadow: 0 0 12px #ff00cc;
+}

@@ -4,7 +4,7 @@ print("ui_elements.py imported")  # DEBUG
 from PyQt6.QtWidgets import (
     QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox, QListWidget,
     QCheckBox, QSpinBox, QSlider, QTreeWidget, QTreeWidgetItem, QWidget, QGridLayout,
-    QSizePolicy, QGraphicsPixmapItem, QApplication
+    QSizePolicy, QGraphicsPixmapItem, QApplication, QProgressBar
 )
 from PyQt6.QtGui import QPixmap, QPainter, QIcon, QImage
 from PyQt6.QtCore import Qt, QTimer, QSize
@@ -32,10 +32,16 @@ def initUI(self):
     
     self.folder_button = QPushButton("Select Folder")
     self.folder_button.clicked.connect(self.loader.load_folder)
-    # Remove any theme cycle button from the UI (if it exists)
-    if hasattr(self, 'theme_button'):
-        self.theme_button.hide()
-        self.theme_button.deleteLater()
+    
+    # Add theme selector button
+    self.theme_button = QPushButton("🎨 Themes")
+    self.theme_button.clicked.connect(self.open_theme_selector)
+    self.theme_button.setToolTip("Open theme selector (or press T to cycle)")
+    
+    # Remove any old theme cycle button from the UI (if it exists)
+    if hasattr(self, 'old_theme_button'):
+        self.old_theme_button.hide()
+        self.old_theme_button.deleteLater()
     
     # Folder selection + refresh
     folder_nav_layout = QHBoxLayout()
@@ -45,6 +51,7 @@ def initUI(self):
     self.refresh_button = QPushButton("Refresh Folder")
     self.refresh_button.clicked.connect(self.loader.load_folder_contents)
     button_layout.addWidget(self.refresh_button)
+    button_layout.addWidget(self.theme_button)  # Add theme button
     # --- Favorite Folder Toggle Button (new) ---
     self.favorite_button = QPushButton("★ Favorite Folder")
     self.favorite_button.setCheckable(True)
@@ -94,17 +101,33 @@ def initUI(self):
     self.file_count_label = QLabel("Files: 0")
     left_panel.addWidget(self.file_count_label)
 
+
+    # --- Clear Crop and Aspect Ratio buttons side by side ---
+    crop_aspect_layout = QHBoxLayout()
     self.clear_crop_button = QPushButton("Clear Crop")
     self.clear_crop_button.clicked.connect(self.loader.clear_crop_region)
-    left_panel.addWidget(self.clear_crop_button)
+    crop_aspect_layout.addWidget(self.clear_crop_button)
     
-    # Auto-advance button: disables looping and plays next file automatically
+    self.aspect_ratio_combo = QComboBox()
+    for ratio_name in self.aspect_ratios.keys():
+        self.aspect_ratio_combo.addItem(ratio_name)
+    self.aspect_ratio_combo.currentTextChanged.connect(self.set_aspect_ratio)
+    crop_aspect_layout.addWidget(self.aspect_ratio_combo)
+    left_panel.addLayout(crop_aspect_layout)
+    
+    # Loop and AV1 buttons side by side
     self.auto_advance_enabled = False
-    self.auto_advance_button = QPushButton("Auto-Advance to Next File")
+    loop_av1_layout = QHBoxLayout()
+    self.auto_advance_button = QPushButton("Loop")
     self.auto_advance_button.setCheckable(True)
     self.auto_advance_button.setChecked(False)
     self.auto_advance_button.clicked.connect(self.toggle_auto_advance)
-    left_panel.addWidget(self.auto_advance_button)
+    loop_av1_layout.addWidget(self.auto_advance_button)
+    self.move_av1_button = QPushButton("AV1")
+    self.move_av1_button.setToolTip("Scan current folder and move all AV1 videos to an 'AV1' subfolder.")
+    self.move_av1_button.clicked.connect(self.on_move_av1_clicked)
+    loop_av1_layout.addWidget(self.move_av1_button)
+    left_panel.addLayout(loop_av1_layout)
 
     # --- YouTube URL Section ---
     yt_layout = QHBoxLayout()
@@ -137,25 +160,50 @@ def initUI(self):
     self.caption_input.setPlaceholderText("Simple caption (Optional)")
     self.caption_input.textChanged.connect(lambda text: setattr(self, "simple_caption", text))
     left_panel.addWidget(self.caption_input)
-    # --- Move aspect ratio box here ---
-    aspect_ratio_layout = QHBoxLayout()
-    self.aspect_ratio_combo = QComboBox()
-    for ratio_name in self.aspect_ratios.keys():
-        self.aspect_ratio_combo.addItem(ratio_name)
-    self.aspect_ratio_combo.currentTextChanged.connect(self.set_aspect_ratio)
-    aspect_ratio_layout.addWidget(self.aspect_ratio_combo)
-    left_panel.addLayout(aspect_ratio_layout)
-    # --- End move ---
 
     # Remove play/pause button from left panel (old)
     # self.play_pause_button = QPushButton("Play/Pause")
     # self.play_pause_button.clicked.connect(self.editor.toggle_play_forward)
     # left_panel.addWidget(self.play_pause_button)
     
-    self.clip_length_label = QLabel("Clip Length: 0")
-    left_panel.addWidget(self.clip_length_label)
-    self.trim_point_label = QLabel("Trim Point: 0")
-    left_panel.addWidget(self.trim_point_label)
+    # Video info grid layout - compact version
+    video_info_layout = QGridLayout()
+    video_info_layout.setContentsMargins(2, 2, 2, 2)  # Reduce margins
+    
+    # Create a small font for compact display
+    small_font = self.font()
+    small_font.setPointSize(small_font.pointSize() - 2)  # Slightly smaller font
+    
+    # Row 0: Clip length and File size
+    self.clip_length_label = QLabel("0")
+    self.clip_length_label.setFont(small_font)
+    video_info_layout.addWidget(QLabel("Clip:"), 0, 0)
+    video_info_layout.addWidget(self.clip_length_label, 0, 1)
+    
+    self.file_size_label = QLabel("0 MB")
+    self.file_size_label.setFont(small_font)
+    video_info_layout.addWidget(QLabel("Size:"), 0, 2)
+    video_info_layout.addWidget(self.file_size_label, 0, 3)
+    
+    # Row 1: Current position and FPS
+    self.trim_point_label = QLabel("0")
+    self.trim_point_label.setFont(small_font)
+    video_info_layout.addWidget(QLabel("Pos:"), 1, 0)
+    video_info_layout.addWidget(self.trim_point_label, 1, 1)
+    
+    self.fps_label = QLabel("0")
+    self.fps_label.setFont(small_font)
+    video_info_layout.addWidget(QLabel("FPS:"), 1, 2)
+    video_info_layout.addWidget(self.fps_label, 1, 3)
+    
+    # Adjust spacing and alignment
+    video_info_layout.setHorizontalSpacing(3)
+    video_info_layout.setVerticalSpacing(1)
+    video_info_layout.setColumnStretch(1, 2)  # Give more space to values
+    video_info_layout.setColumnStretch(3, 2)  # Give more space to values
+    
+    # Add the grid to the left panel
+    left_panel.addLayout(video_info_layout)
     
     trim_layout = QHBoxLayout()
     trim_layout.addWidget(QLabel("Trim Length (frames):"))
@@ -173,7 +221,40 @@ def initUI(self):
     
     main_layout.addLayout(left_panel, 1)
 
-    self.video_list.setStyleSheet("QListWidget::item:selected { background-color: #3A4F7A; }")
+    # Set size constraints to prevent UI resizing when themes change
+    self.setMinimumSize(1200, 800)  # Minimum window size
+    self.resize(1400, 900)  # Default window size
+    
+    # Set fixed heights for key UI elements to prevent resizing
+    self.folder_button.setFixedHeight(35)
+    self.refresh_button.setFixedHeight(35)
+    self.theme_button.setFixedHeight(35)
+    self.favorite_button.setFixedHeight(35)
+    self.search_bar.setFixedHeight(30)
+    self.sort_dropdown.setFixedHeight(30)
+    self.clear_crop_button.setFixedHeight(35)
+    self.auto_advance_button.setFixedHeight(35)
+    self.youtube_url_input.setFixedHeight(30)
+    self.youtube_load_button.setFixedHeight(30)
+    self.youtube_folder_button.setFixedHeight(30)
+    self.resolution_input.setFixedHeight(30)
+    self.prefix_input.setFixedHeight(30)
+    self.caption_input.setFixedHeight(30)
+    self.aspect_ratio_combo.setFixedHeight(30)
+    self.trim_spin.setFixedHeight(30)
+    
+    # Set fixed widths for consistent layout
+    self.folder_button.setFixedWidth(120)
+    self.refresh_button.setFixedWidth(120)
+    self.theme_button.setFixedWidth(120)
+    self.favorite_button.setFixedWidth(120)
+    self.clear_crop_button.setFixedWidth(120)
+    self.auto_advance_button.setFixedWidth(180)
+    self.youtube_load_button.setFixedWidth(100)
+    self.youtube_folder_button.setFixedWidth(100)
+    self.aspect_ratio_combo.setFixedWidth(150)
+
+    # self.video_list.setStyleSheet("QListWidget::item:selected { background-color: #3A4F7A; }")
     
     # RIGHT PANEL
     self.right_panel_layout = QVBoxLayout()
@@ -182,12 +263,14 @@ def initUI(self):
     # Place clock and monitoring label on the same horizontal line
     clock_monitor_layout = QHBoxLayout()
     self.monitoring_label = QLabel("Loading system status...")
+    self.monitoring_label.setObjectName("monitoring_label")
     self.monitoring_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-    self.monitoring_label.setStyleSheet("font-size: 12px; color: #ECEFF4;")
+    # self.monitoring_label.setStyleSheet("font-size: 12px; color: #ECEFF4;")
     clock_monitor_layout.addWidget(self.monitoring_label, stretch=2)
     self.clock_label = QLabel()
+    self.clock_label.setObjectName("clock_label")
     self.clock_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-    self.clock_label.setStyleSheet("font-size: 18px; color: #FFD700; padding-left: 12px;")
+    # self.clock_label.setStyleSheet("font-size: 18px; color: #FFD700; padding-left: 12px;")
     clock_monitor_layout.addWidget(self.clock_label, stretch=1)
     right_panel.addLayout(clock_monitor_layout)
     def update_clock():
@@ -222,9 +305,11 @@ def initUI(self):
     update_monitoring()
     
     # Moved slider above the video display
-    self.slider = QSlider(Qt.Orientation.Horizontal)
+    from scripts.scene_slider import SceneSlider
+    self.slider = SceneSlider(Qt.Orientation.Horizontal)
     self.slider.setEnabled(False)
     self.slider.sliderMoved.connect(self.editor.scrub_video)
+    self.slider.scene_clicked.connect(self.on_scene_marker_clicked)
     right_panel.addWidget(self.slider)
     
     self.graphics_view = CustomGraphicsView()
@@ -241,8 +326,9 @@ def initUI(self):
     right_panel.addWidget(self.graphics_view, 1)
     
     self.thumbnail_label = QWidget(self)
+    self.thumbnail_label.setObjectName("thumbnail_label")
     self.thumbnail_label.setWindowFlags(Qt.WindowType.ToolTip)
-    self.thumbnail_label.setStyleSheet("background-color: black; border: 1px solid white;")
+    # self.thumbnail_label.setStyleSheet("background-color: black; border: 1px solid white;")
     self.thumbnail_label.hide()
     right_panel.addWidget(self.thumbnail_label)
     self.thumbnail_image_label = QLabel(self.thumbnail_label)
@@ -251,16 +337,42 @@ def initUI(self):
     self.slider.installEventFilter(self)
     
 
-    # --- Move Play/Pause button here ---
+    # --- Control Buttons Row ---
     button_row = QHBoxLayout()
+    
+    # Play/Pause button
     self.play_pause_button = QPushButton("Play/Pause")
     self.play_pause_button.clicked.connect(self.editor.toggle_play_forward)
     button_row.addWidget(self.play_pause_button)
+    
+    # Audio Toggle button
+    self.audio_button = QPushButton("🔇 Audio Off")
+    self.audio_button.setCheckable(True)
+    self.audio_button.setChecked(False)
+    self.audio_button.clicked.connect(self.toggle_audio)
+    button_row.addWidget(self.audio_button)
+    
+    # Export button
     self.submit_button = QPushButton("Export Cropped Videos")
     self.submit_button.clicked.connect(self.exporter.export_videos)
     button_row.addWidget(self.submit_button)
+    
+    # Scene detection button
+    self.detect_scenes_button = QPushButton("Detect Scenes")
+    self.detect_scenes_button.clicked.connect(self.detect_scenes_for_current_video)
+    button_row.addWidget(self.detect_scenes_button)
+    
     right_panel.addLayout(button_row)
     # --- End Move ---
+    
+    # Add scene detection progress bar
+    self.scene_progress_label = QLabel("Scene Detection Progress:")
+    self.scene_progress_label.setVisible(False)
+    right_panel.addWidget(self.scene_progress_label)
+    
+    self.scene_progress_bar = QProgressBar()
+    self.scene_progress_bar.setVisible(False)
+    right_panel.addWidget(self.scene_progress_bar)
     
     self.status_label = QLabel("Ready")
     right_panel.addWidget(self.status_label)
@@ -282,6 +394,8 @@ def initUI(self):
     self.multi_grid_widget = QWidget()
     self.multi_grid_layout = QGridLayout(self.multi_grid_widget)
     self.multi_grid_widget.setVisible(False)
+    # Enable drag and drop on the grid widget itself
+    self.multi_grid_widget.setAcceptDrops(True)
     # Insert the multi grid above the graphics_view in the right panel
     self.right_panel_layout.insertWidget(1, self.multi_grid_widget)
     
@@ -302,6 +416,9 @@ def clear_crop_region_controller(self):
     only one crop region is visible.
     """
     from scripts.interactive_crop_region import InteractiveCropRegion
+    # Safety check: ensure scene exists
+    if not hasattr(self, 'scene') or self.scene is None:
+        return
     # Collect all items that are instances of InteractiveCropRegion.
     items_to_remove = [item for item in self.scene.items() if isinstance(item, InteractiveCropRegion)]
     for item in items_to_remove:
@@ -335,42 +452,87 @@ def crop_rect_finalized(self, rect):
     self.check_current_video_item()
     
 
+def open_theme_selector(self):
+        """Open the theme selector dialog"""
+        from scripts.theme_selector import ThemeSelector
+        dialog = ThemeSelector(self)
+        dialog.exec()
+
 def cycle_theme(self):
-        # Simple theme cycling: dark, light, none
+        # Enhanced theme cycling with organized themes
         if not hasattr(self, '_theme_index'):
             self._theme_index = 0
         themes = [
-            None,
-            'styles/minimalist.css',
-            'styles/retro_terminal.css',
-            'styles/cyberpunk.css',
-            'styles/high_contrast.css',
-            'styles/playful.css',
-            'styles/vintage_mac.css',
-            'styles/music_daw.css',
-            'styles/hacker_matrix.css',
-            'styles/pastel_bliss.css',
-            'styles/animated_rainbow.css',
-            'styles/animated_neon.css',
-            'styles/animated_bubblegum.css',
-            'styles/cartoon_pop.css',
-            'styles/space_aurora.css',
-            'styles/vaporwave_sunset.css',
-            'styles/underwater_deep.css',
-            'styles/lava_lamp.css',
-            'styles/origami_fold.css',
-            'styles/pixel_art.css',
-            'styles/wooden_desk.css',
-            'styles/ice_cave.css',
-            'styles/terminal_glass.css',
+            None,  # Default system theme
+            # Premium Themes
+            'styles/premium/stellar_nebula.css',
+            'styles/premium/amber_twilight.css',
+            'styles/premium/abyssal_blue.css',
+            'styles/premium/retro_arcade.css',
+            'styles/premium/brass_steam.css',
+            'styles/premium/quantum_hologram.css',
+            'styles/premium/cyber_neon.css',
+            'styles/premium/clean_slate.css',
+            # Professional Themes
+            'styles/professional/corporate_night.css',
+            'styles/professional/arctic_frost.css',
+            'styles/professional/urban_neon.css',
+            'styles/classic/gothic_horror.css',
+            'styles/professional/elegant_dark.css',
+            'styles/professional/soft_night.css',
+            # Classic Themes
+            'styles/classic/classic_mac.css',
+            'styles/classic/wooden_desk.css',
+            'styles/classic/deep_ocean.css',
+            'styles/classic/glass_terminal.css',
+            'styles/classic/sunset_glow.css',
+            'styles/classic/8bit_dreams.css',
+            'styles/classic/study_notes.css',
+            'styles/classic/paper_art.css',
+            'styles/classic/frozen_crystal.css',
+            'styles/classic/code_light.css',
+            # Animated Themes
+            'styles/animated/pulsing_neon.css',
+            'styles/animated/bubblegum_pop.css',
+            'styles/animated/lava_lamp.css',
+            # Minimal Themes
+            'styles/minimal/pure_minimal.css',
+            'styles/minimal/ocean_breeze.css',
+            'styles/minimal/studio_dark.css',
+            'styles/minimal/pastel_dreams.css',
+            'styles/minimal/aurora_borealis.css',
+            'styles/minimal/vapor_sunset.css',
+            'styles/minimal/pure_dark.css',
+            'styles/minimal/material_blue.css',
+            'styles/minimal/solarized_dark.css',
         ]
         self._theme_index = (self._theme_index + 1) % len(themes)
         theme = themes[self._theme_index]
+        
+        # Preserve current window size and position
+        current_size = self.size()
+        current_pos = self.pos()
+        
+        # Get theme name for display
+        if theme:
+            theme_name = os.path.basename(theme).replace('.css', '').replace('_', ' ').title()
+        else:
+            theme_name = "System Default"
+        
         if theme and os.path.exists(theme):
             with open(theme, 'r') as f:
                 QApplication.instance().setStyleSheet(f.read())
+            # Update status to show current theme
+            if hasattr(self, 'update_status'):
+                self.update_status(f"Theme: {theme_name}")
         else:
             QApplication.instance().setStyleSheet("")
+            if hasattr(self, 'update_status'):
+                self.update_status(f"Theme: {theme_name}")
+        
+        # Restore window size and position to prevent resizing
+        self.resize(current_size)
+        self.move(current_pos)
 
 def toggle_fullscreen(self):
         if not hasattr(self, '_is_fullscreen'):
@@ -464,6 +626,25 @@ def take_screenshot(self):
         else:
             self.update_status("Failed to save screenshot.")
     
+
+def on_move_av1_clicked(self):
+    from PyQt6.QtWidgets import QMessageBox
+    import os
+    try:
+        from scripts.av1_utils import move_av1_videos
+        folder = self.folder_path
+        if not folder or not os.path.isdir(folder):
+            QMessageBox.warning(self, "No Folder", "No valid folder selected.")
+            return
+        moved = move_av1_videos(folder)
+        if moved:
+            msg = f"Moved {len(moved)} AV1 videos to 'AV1' subfolder:\n" + "\n".join(moved)
+        else:
+            msg = "No AV1 videos found."
+        QMessageBox.information(self, "AV1 Move Complete", msg)
+        self.loader.load_folder_contents()  # Refresh UI
+    except Exception as e:
+        QMessageBox.critical(self, "Error", f"Failed to move AV1 videos:\n{e}")
 
 def check_current_video_item(self):
     # Find the list item corresponding to the current video and mark it checked.

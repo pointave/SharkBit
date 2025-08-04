@@ -1,0 +1,134 @@
+/* Lava Lamp Theme - Improved */
+QWidget {
+    background-color: #ff512f;
+    color: #ffffff;
+    font-family: 'Fredoka One', 'Arial', sans-serif;
+    font-size: 16px;
+}
+
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #2d3748;
+    border: 2px solid #dd2476;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 16px;
+    box-shadow: 0 0 20px rgba(221, 36, 118, 0.3);
+}
+
+QPushButton:hover {
+    background-color: #dd2476;
+    color: #ffffff;
+    border-color: #ff512f;
+    box-shadow: 0 0 40px rgba(255, 81, 47, 0.5);
+}
+
+QPushButton:pressed {
+    background-color: #1e3c72;
+    color: #ffffff;
+    border-color: #ff512f;
+}
+
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #dd2476;
+    selection-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #2d3748;
+}
+
+QListWidget {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #2d3748;
+    alternate-background-color: rgba(255, 255, 255, 0.7);
+    border: 2px solid #dd2476;
+}
+
+QListWidget::item:selected {
+    background-color: #dd2476;
+    color: #ffffff;
+}
+
+QListWidget::item:hover {
+    background-color: rgba(221, 36, 118, 0.2);
+    color: #2d3748;
+}
+
+QSlider::groove:horizontal {
+    background-color: rgba(255, 255, 255, 0.3);
+    height: 8px;
+    border: 1px solid #dd2476;
+    border-radius: 4px;
+}
+
+QSlider::handle:horizontal {
+    background-color: #ff512f;
+    width: 18px;
+    height: 18px;
+    margin: -5px 0;
+    border-radius: 9px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 12px rgba(255, 81, 47, 0.5);
+}
+
+QCheckBox {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid #dd2476;
+    border-radius: 4px;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #dd2476;
+    border-color: #ff512f;
+    box-shadow: 0 0 12px rgba(221, 36, 118, 0.5);
+}
+
+QLabel#status_label {
+    color: #ffffff;
+    font-weight: bold;
+    background-color: rgba(30, 60, 114, 0.8);
+    border: 2px solid #ff512f;
+    padding: 8px;
+    border-radius: 12px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Special styling for monitoring label */
+QLabel#monitoring_label {
+    color: #ffffff !important;
+    font-weight: bold !important;
+    background-color: rgba(30, 60, 114, 0.8) !important;
+    border: 2px solid #ff512f !important;
+    padding: 8px !important;
+    border-radius: 12px !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+    font-size: 12px !important;
+}
+
+QGraphicsView {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid #dd2476;
+    border-radius: 20px;
+}
+
+QProgressBar {
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 2px solid #dd2476;
+    border-radius: 12px;
+    text-align: center;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+QProgressBar::chunk {
+    background-color: #ff512f;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(255, 81, 47, 0.5);
+}

@@ -1,0 +1,255 @@
+/* Holographic Theme - Futuristic Iridescent Aesthetic */
+QWidget {
+    background-color: #0a0a0a;
+    color: #00ffff;
+    font-family: 'Orbitron', 'Arial', sans-serif;
+    font-size: 11px;
+}
+
+QPushButton {
+    background-color: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    border: 2px solid #00ffff;
+    border-radius: 30px;
+    padding: 15px 30px;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5), inset 0 0 20px rgba(0, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+QPushButton:hover {
+    background-color: rgba(255, 0, 255, 0.2);
+    color: #ff00ff;
+    border-color: #ff00ff;
+    box-shadow: 0 0 40px rgba(255, 0, 255, 0.6), inset 0 0 20px rgba(255, 0, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+QPushButton:pressed {
+    background-color: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+    border-color: #00ff00;
+    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.3);
+    transform: translateY(0px);
+}
+
+QLineEdit, QComboBox, QSpinBox {
+    background-color: #ffffff;
+    color: #000000;
+    border: 2px solid #00ffff;
+    border-radius: 12px;
+    padding: 8px 12px;
+    selection-background-color: rgba(255, 0, 255, 0.3);
+    selection-color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3), inset 0 0 8px rgba(0, 255, 255, 0.1);
+    font-size: 10px;
+}
+
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border-color: #ff00ff;
+    background-color: #f8f8ff;
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.5), inset 0 0 10px rgba(255, 0, 255, 0.2);
+}
+
+QListWidget {
+    background-color: rgba(0, 255, 255, 0.05);
+    color: #00ffff;
+    border: 2px solid #00ffff;
+    border-radius: 15px;
+    alternate-background-color: rgba(255, 0, 255, 0.05);
+    padding: 8px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+QListWidget::item {
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin: 2px;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+QListWidget::item:selected {
+    background-color: rgba(255, 0, 255, 0.3);
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+    border: 1px solid #ff00ff;
+}
+
+QListWidget::item:hover {
+    background-color: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+    border: 1px solid rgba(0, 255, 0, 0.6);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+QSlider::groove:horizontal {
+    background-color: rgba(0, 255, 255, 0.1);
+    height: 15px;
+    border: 2px solid #00ffff;
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+QSlider::handle:horizontal {
+    background-color: #ff00ff;
+    width: 30px;
+    height: 30px;
+    margin: -8px 0;
+    border-radius: 15px;
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 25px rgba(255, 0, 255, 0.8);
+}
+
+QSlider::handle:horizontal:hover {
+    background-color: #00ff00;
+    border-color: #ff00ff;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.9);
+}
+
+QCheckBox {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: #00ffff;
+}
+
+QCheckBox::indicator {
+    width: 22px;
+    height: 22px;
+    background-color: rgba(0, 255, 255, 0.1);
+    border: 2px solid #00ffff;
+    border-radius: 6px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+
+QCheckBox::indicator:checked {
+    background-color: #ff00ff;
+    border-color: #00ffff;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
+}
+
+QTreeWidget {
+    background-color: rgba(0, 255, 255, 0.05);
+    color: #00ffff;
+    border: 2px solid #00ffff;
+    border-radius: 25px;
+    alternate-background-color: rgba(255, 0, 255, 0.05);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+QTreeWidget::item:selected {
+    background-color: rgba(255, 0, 255, 0.3);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+QTreeWidget::item:hover {
+    background-color: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+}
+
+QGraphicsView {
+    background-color: rgba(0, 255, 255, 0.05);
+    border: 2px solid #00ffff;
+    border-radius: 25px;
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.3), inset 0 0 15px rgba(0, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+QProgressBar {
+    background-color: rgba(0, 255, 255, 0.1);
+    border: 2px solid #00ffff;
+    border-radius: 20px;
+    text-align: center;
+    color: #00ffff;
+    font-weight: 700;
+    box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+QProgressBar::chunk {
+    background-color: #ff00ff;
+    border-radius: 18px;
+    margin: 2px;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
+}
+
+QScrollBar:vertical {
+    background-color: rgba(0, 255, 255, 0.1);
+    width: 18px;
+    border-radius: 9px;
+    margin: 0;
+    border: 2px solid #00ffff;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #ff00ff;
+    border-radius: 9px;
+    min-height: 35px;
+    margin: 3px;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #00ff00;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background-color: rgba(0, 255, 255, 0.1);
+    height: 18px;
+    border-radius: 9px;
+    margin: 0;
+    border: 2px solid #00ffff;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #ff00ff;
+    border-radius: 9px;
+    min-width: 35px;
+    margin: 3px;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #00ff00;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* Special styling for monitoring label */
+QLabel#monitoring_label {
+    background-color: rgba(255, 0, 255, 0.9);
+    color: #ffffff;
+    border: 2px solid #00ffff;
+    border-radius: 20px;
+    padding: 15px 20px;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+QLabel#status_label {
+    color: #00ffff;
+    font-weight: bold;
+    font-size: 12px;
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+} 

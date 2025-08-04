@@ -42,7 +42,10 @@ class VideoLoader:
                         })
             
             # Populate list by current sort mode
-            mode = self.main_app.sort_dropdown.currentText()
+            if hasattr(self.main_app, 'sort_dropdown'):
+                mode = self.main_app.sort_dropdown.currentText()
+            else:
+                mode = "Date (new first)"  # Default sort mode
             self.sort_videos(mode)
             
             # Select first video if available, but defer loading until UI is responsive
@@ -216,6 +219,8 @@ class VideoLoader:
                 self.main_app.trim_points = session_data.get("trim_points", {})
                 self.main_app.longest_edge = session_data.get("longest_edge", 1024)
                 self.main_app.trim_length = session_data.get("trim_length", 113)
+                # Load grid layout mode preference
+                self.main_app.grid_layout_mode = session_data.get("grid_layout_mode", "auto")
             except json.JSONDecodeError:
                 print("Error: Session file is corrupted. Starting with an empty session.")
                 self.main_app.folder_sessions = {}
@@ -237,7 +242,8 @@ class VideoLoader:
             "crop_regions": self.main_app.crop_regions,
             "trim_points": self.main_app.trim_points,
             "longest_edge": self.main_app.longest_edge,
-            "trim_length": self.main_app.trim_length
+            "trim_length": self.main_app.trim_length,
+            "grid_layout_mode": self.main_app.grid_layout_mode
         }
         with open(self.session_file, "w") as file:
             json.dump(session_data, file)

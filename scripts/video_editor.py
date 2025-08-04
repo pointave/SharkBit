@@ -1,4 +1,5 @@
 # video_editor.py
+import os
 import cv2
 from PyQt6.QtGui import QImage, QPixmap, QPainter, QColor, QPen
 from PyQt6.QtCore import Qt, QTimer, QRectF
@@ -107,7 +108,20 @@ class VideoEditor:
                 # Show both total frames and total seconds
         fps = getattr(self.main_app, 'video_fps', 30)
         total_seconds = self.main_app.frame_count / fps if fps else 0
-        self.main_app.clip_length_label.setText(f"Clip Length: {self.main_app.frame_count} ({total_seconds:.2f}s)")
+        # Format large numbers with commas for better readability (e.g., 1,234,567)
+        frame_count_str = f"{self.main_app.frame_count:,}"
+        self.main_app.clip_length_label.setText(f"{frame_count_str} ({total_seconds:.1f}s)")
+        # Update FPS display with just the number
+        self.main_app.fps_label.setText(f"{fps:.1f}")
+        
+        # Update file size
+        try:
+            file_size = os.path.getsize(video_path) / (1024 * 1024)  # Convert to MB
+            self.main_app.file_size_label.setText(f"{file_size:.1f} MB")
+        except Exception as e:
+            print(f"Error getting file size: {e}")
+            self.main_app.file_size_label.setText("N/A")
+            
         self.update_trim_label()
         self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         ret, frame = self.main_app.cap.read()
@@ -186,7 +200,7 @@ class VideoEditor:
                 total_frames = getattr(self.main_app, 'frame_count', 1)
                 second = current_frame / fps if fps else 0
                 percent = (current_frame / total_frames * 100) if total_frames else 0
-                self.main_app.trim_point_label.setText(f"Current Frame: {current_frame} ({second:.2f}s, {percent:.1f}%)")
+                self.main_app.trim_point_label.setText(f"{current_frame} ({second:.1f}s, {percent:.0f}%)")
 
     def scrub_video(self, position):
         if self.main_app.cap:
@@ -200,15 +214,12 @@ class VideoEditor:
 
     def update_trim_label(self):
         val = self.main_app.slider.value()
-                # Show both frame and second count
-        fps = getattr(self.main_app, 'video_fps', 30)
-        second = val / fps if fps else 0
-                # Show frame, second, and percent
+        # Show frame, second, and percent
         fps = getattr(self.main_app, 'video_fps', 30)
         total_frames = getattr(self.main_app, 'frame_count', 1)
         second = val / fps if fps else 0
         percent = (val / total_frames * 100) if total_frames else 0
-        self.main_app.trim_point_label.setText(f"Trim Point: {val} ({second:.2f}s, {percent:.1f}%)")
+        self.main_app.trim_point_label.setText(f"{val} ({second:.1f}s, {percent:.0f}%)")
         self.main_app.trim_points[self.main_app.current_video] = val
         if self.main_app.trim_modified:
             self.main_app.check_current_video_item()

@@ -1,0 +1,248 @@
+/* Modern Light Theme - Clean Minimalist Aesthetic */
+QWidget {
+    background-color: #ffffff;
+    color: #2c3e50;
+    font-family: 'Inter', 'SF Pro Text', 'Segoe UI', sans-serif;
+    font-size: 11px;
+}
+
+QPushButton {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: 2px solid #5a6fd8;
+    border-radius: 20px;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+QPushButton:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    color: #ffffff;
+    border-color: #6a7ce0;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+QPushButton:pressed {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a5acd 100%);
+    color: #ffffff;
+    border-color: #667eea;
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(0px);
+}
+
+QLineEdit, QComboBox, QSpinBox {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    padding: 10px 18px;
+    selection-background-color: #3498db;
+    selection-color: #ffffff;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border-color: #3498db;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1), inset 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+QListWidget {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    alternate-background-color: #ffffff;
+    padding: 10px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+QListWidget::item {
+    padding: 3px 6px;
+    border-radius: 8px;
+    margin: 1px;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+QListWidget::item:selected {
+    background-color: #3498db;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    border: 2px solid #2980b9;
+}
+
+QListWidget::item:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: #2c3e50;
+    border: 2px solid rgba(52, 152, 219, 0.3);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+}
+
+QSlider::groove:horizontal {
+    background-color: #e9ecef;
+    height: 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+QSlider::handle:horizontal {
+    background-color: #3498db;
+    width: 24px;
+    height: 24px;
+    margin: -6px 0;
+    border-radius: 12px;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+QSlider::handle:horizontal:hover {
+    background-color: #2980b9;
+    box-shadow: 0 6px 16px rgba(41, 128, 185, 0.5);
+}
+
+QCheckBox {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    color: #2c3e50;
+}
+
+QCheckBox::indicator {
+    width: 20px;
+    height: 20px;
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+QCheckBox::indicator:checked {
+    background-color: #3498db;
+    border-color: #2980b9;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+}
+
+QTreeWidget {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    alternate-background-color: #ffffff;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+QTreeWidget::item:selected {
+    background-color: #3498db;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+QTreeWidget::item:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: #2c3e50;
+}
+
+QGraphicsView {
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+QProgressBar {
+    background-color: #e9ecef;
+    border: 2px solid #dee2e6;
+    border-radius: 15px;
+    text-align: center;
+    color: #2c3e50;
+    font-weight: 600;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+QProgressBar::chunk {
+    background-color: #3498db;
+    border-radius: 13px;
+    margin: 2px;
+    box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+}
+
+QScrollBar:vertical {
+    background-color: #e9ecef;
+    width: 16px;
+    border-radius: 8px;
+    margin: 0;
+    border: 2px solid #dee2e6;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #bdc3c7;
+    border-radius: 8px;
+    min-height: 30px;
+    margin: 2px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #3498db;
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar:horizontal {
+    background-color: #e9ecef;
+    height: 16px;
+    border-radius: 8px;
+    margin: 0;
+    border: 2px solid #dee2e6;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #bdc3c7;
+    border-radius: 8px;
+    min-width: 30px;
+    margin: 2px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #3498db;
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+
+/* Special styling for monitoring label */
+QLabel#monitoring_label {
+    background-color: rgba(52, 152, 219, 0.95);
+    color: #ffffff;
+    border: 2px solid #2980b9;
+    border-radius: 15px;
+    padding: 12px 18px;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+QLabel#status_label {
+    color: #3498db;
+    font-weight: bold;
+    font-size: 12px;
+    text-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+} 

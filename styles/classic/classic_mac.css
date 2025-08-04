@@ -1,0 +1,113 @@
+/* Vintage Mac Theme - Improved */
+QWidget {
+    background-color: #c0c0c0;
+    color: #000000;
+    font-family: 'Chicago', 'Arial', sans-serif;
+    font-size: 15px;
+}
+
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #e0e0e0;
+    color: #000000;
+    border: 2px outset #ffffff;
+    border-radius: 0px;
+    font-family: inherit;
+    font-size: 15px;
+    box-shadow: 2px 2px 0 #808080;
+}
+
+QPushButton:hover {
+    background-color: #b0b0b0;
+}
+
+QPushButton:pressed {
+    background-color: #a0a0a0;
+    border: 2px inset #808080;
+}
+
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #000080;
+    selection-color: #ffffff;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+QListWidget {
+    background-color: #ffffff;
+    color: #000000;
+    alternate-background-color: #f0f0f0;
+}
+
+QListWidget::item:selected {
+    background-color: #000080;
+    color: #ffffff;
+}
+
+QSlider::groove:horizontal {
+    background-color: #c0c0c0;
+    height: 8px;
+    border: 1px inset #808080;
+}
+
+QSlider::handle:horizontal {
+    background-color: #e0e0e0;
+    width: 18px;
+    height: 18px;
+    margin: -5px 0;
+    border: 2px outset #ffffff;
+    box-shadow: 1px 1px 0 #808080;
+}
+
+QCheckBox {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    background-color: #e0e0e0;
+    border: 2px outset #ffffff;
+    box-shadow: 1px 1px 0 #808080;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #000080;
+    border: 2px inset #808080;
+}
+
+QLabel#status_label {
+    color: #000080;
+    font-weight: bold;
+    background-color: #e0e0e0;
+    border: 1px solid #808080;
+    padding: 4px;
+}
+
+/* Special styling for monitoring label to ensure readability */
+QLabel#monitoring_label {
+    color: #000080 !important;
+    font-weight: bold !important;
+    background-color: #e0e0e0 !important;
+    border: 1px solid #808080 !important;
+    padding: 4px !important;
+    font-size: 12px !important;
+}
+
+QGraphicsView {
+    background-color: #ffffff;
+    border: 2px inset #808080;
+}
+
+QProgressBar {
+    background-color: #c0c0c0;
+    border: 2px inset #808080;
+    text-align: center;
+    color: #000000;
+}
+
+QProgressBar::chunk {
+    background-color: #000080;
+    border: 1px solid #000080;
+}

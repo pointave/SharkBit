@@ -1,0 +1,51 @@
+/* Material Ocean Theme */
+QWidget {
+    background-color: #0f111a;
+    color: #a6accd;
+}
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: #1b1e2b;
+    color: #a6accd;
+    border: 1px solid #444267;
+}
+QPushButton:hover {
+    background-color: #444267;
+}
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #84ffff;
+    selection-color: #0f111a;
+}
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #1b1e2b;
+    border: 1px solid #444267;
+}
+QSlider::groove:horizontal, QSlider::groove:vertical {
+    background: #444267;
+}
+QSlider::handle:horizontal, QSlider::handle:vertical {
+    background: #84ffff;
+    border: 1px solid #444267;
+}
+QTreeWidget {
+    alternate-background-color: #1b1e2b;
+}
+
+QListWidget::item {
+    padding: 2px 4px;
+    margin: 0px;
+    background: transparent;
+    border: none;
+}
+
+QListWidget::item:selected {
+    background-color: #444267;
+    color: #84ffff;
+}
+
+QListWidget::item:hover {
+    background-color: rgba(68, 66, 103, 0.5);
+}
+
+QLabel#status_label {
+    color: #84ffff;
+}

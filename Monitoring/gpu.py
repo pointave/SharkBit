@@ -28,9 +28,9 @@ class CGPUInfo:
         try:
             pynvml.nvmlInit()
             self.pynvmlLoaded = True
-            logger.info('Pynvml (Nvidia) initialized.')
         except Exception as e:
-            logger.error('Could not init pynvml (Nvidia).' + str(e))
+            logger.error(f'Could not init pynvml: {e}')
+            self.pynvmlLoaded = False
 
         # if not self.pynvmlLoaded:
         #     try:
@@ -44,12 +44,11 @@ class CGPUInfo:
         self.anygpuLoaded = self.pynvmlLoaded
 
         try:
-            if torch.cuda.is_available():
-                self.torchDevice = 'cuda'
-            else:
-                self.torchDevice = 'cpu'
+            torch_available = torch.cuda.is_available()
+            torch_count = torch.cuda.device_count()
+            self.torchDevice = 'cuda' if torch_available else 'cpu'
         except Exception as e:
-            logger.error('Could not pick default device.' + str(e))
+            logger.error(f'Could not check torch.cuda: {e}')
             self.torchDevice = 'cpu'
 
         # ZLUDA Check, self.torchDevice has 'ZLUDA' in it.
@@ -85,15 +84,15 @@ class CGPUInfo:
                 self.gpusTemperature.append(True)
 
             self.cuda = True
-            logger.info(self.systemGetDriverVersion())
+            logger.info(f"Driver version: {self.systemGetDriverVersion()}")
         else:
-            logger.warn('No GPU with CUDA detected.')
+            logger.info('No GPU with CUDA detected.')
 
         self.cudaDevice = 'cpu' if self.torchDevice == 'cpu' else 'cuda'
         self.cudaAvailable = torch.cuda.is_available()
 
         if self.cuda and self.cudaAvailable and self.torchDevice == 'cpu':
-            logger.warn('CUDA is available, but torch is using CPU.')
+            logger.info('CUDA is available, but torch is using CPU.')
 
     def getInfo(self):
         logger.debug('Getting GPUs info...')
@@ -110,7 +109,67 @@ class CGPUInfo:
         gpuType = ''
         gpus = []
 
-        if self.cudaDevice == 'cpu':
+        # Use pynvml if available and GPU detected, regardless of PyTorch CUDA status
+        if self.anygpuLoaded and self.cuda and self.cudaDevicesFound > 0:
+            gpuType = 'cuda'  # Use 'cuda' even if PyTorch doesn't detect it
+            
+            # for simulate multiple GPUs (for testing) interchange these comments:
+            # for deviceIndex in range(3):
+            #     deviceHandle = self.deviceGetHandleByIndex(0)
+            for deviceIndex in range(self.cudaDevicesFound):
+                deviceHandle = self.deviceGetHandleByIndex(deviceIndex)
+
+                gpuUtilization = -1
+                vramPercent = -1
+                vramUsed = -1
+                vramTotal = -1
+                gpuTemperature = -1
+
+                # GPU Utilization
+                if self.switchGPU and self.gpusUtilization[deviceIndex]:
+                    try:
+                        gpuUtilization = self.deviceGetUtilizationRates(deviceHandle)
+                    except Exception as e:
+                        if str(e) == "Unknown Error":
+                            logger.error('For some reason, pynvml is not working in a laptop with only battery, try to connect and turn on the monitor')
+                        else:
+                            logger.error('Could not get GPU utilization.' + str(e))
+
+                        logger.error('Monitor of GPU is turning off (not on UI!)')
+                        self.switchGPU = False
+
+                # VRAM
+                if self.switchVRAM and self.gpusVRAM[deviceIndex]:
+                    # Torch or pynvml?, pynvml is more accurate with the system, torch is more accurate with comfyUI
+                    memory = self.deviceGetMemoryInfo(deviceHandle)
+                    vramUsed = memory['used']
+                    vramTotal = memory['total']
+
+                    # device = torch.device(gpuType)
+                    # vramUsed = torch.cuda.memory_allocated(device)
+                    # vramTotal = torch.cuda.get_device_properties(device).total_memory
+
+                    # check if vramTotal is not zero or None
+                    if vramTotal and vramTotal != 0:
+                        vramPercent = vramUsed / vramTotal * 100
+
+                # Temperature
+                if self.switchTemperature and self.gpusTemperature[deviceIndex]:
+                    try:
+                        gpuTemperature = self.deviceGetTemperature(deviceHandle)
+                    except Exception as e:
+                        logger.error('Could not get GPU temperature. Turning off this feature. ' + str(e))
+                        self.switchTemperature = False
+
+                gpus.append({
+                    'gpu_utilization': gpuUtilization,
+                    'gpu_temperature': gpuTemperature,
+                    'vram_total': vramTotal,
+                    'vram_used': vramUsed,
+                    'vram_used_percent': vramPercent,
+                })
+        else:
+            # Fallback to CPU if no GPU detected
             gpuType = 'cpu'
             gpus.append({
                 'gpu_utilization': -1,
@@ -119,65 +178,6 @@ class CGPUInfo:
                 'vram_used': -1,
                 'vram_used_percent': -1,
             })
-        else:
-            gpuType = self.cudaDevice
-
-            if self.anygpuLoaded and self.cuda and self.cudaAvailable:
-                # for simulate multiple GPUs (for testing) interchange these comments:
-                # for deviceIndex in range(3):
-                #     deviceHandle = self.deviceGetHandleByIndex(0)
-                for deviceIndex in range(self.cudaDevicesFound):
-                    deviceHandle = self.deviceGetHandleByIndex(deviceIndex)
-
-                    gpuUtilization = -1
-                    vramPercent = -1
-                    vramUsed = -1
-                    vramTotal = -1
-                    gpuTemperature = -1
-
-                    # GPU Utilization
-                    if self.switchGPU and self.gpusUtilization[deviceIndex]:
-                        try:
-                            gpuUtilization = self.deviceGetUtilizationRates(deviceHandle)
-                        except Exception as e:
-                            if str(e) == "Unknown Error":
-                                logger.error('For some reason, pynvml is not working in a laptop with only battery, try to connect and turn on the monitor')
-                            else:
-                                logger.error('Could not get GPU utilization.' + str(e))
-
-                            logger.error('Monitor of GPU is turning off (not on UI!)')
-                            self.switchGPU = False
-
-                    # VRAM
-                    if self.switchVRAM and self.gpusVRAM[deviceIndex]:
-                        # Torch or pynvml?, pynvml is more accurate with the system, torch is more accurate with comfyUI
-                        memory = self.deviceGetMemoryInfo(deviceHandle)
-                        vramUsed = memory['used']
-                        vramTotal = memory['total']
-
-                        # device = torch.device(gpuType)
-                        # vramUsed = torch.cuda.memory_allocated(device)
-                        # vramTotal = torch.cuda.get_device_properties(device).total_memory
-
-                        # check if vramTotal is not zero or None
-                        if vramTotal and vramTotal != 0:
-                            vramPercent = vramUsed / vramTotal * 100
-
-                    # Temperature
-                    if self.switchTemperature and self.gpusTemperature[deviceIndex]:
-                        try:
-                            gpuTemperature = self.deviceGetTemperature(deviceHandle)
-                        except Exception as e:
-                            logger.error('Could not get GPU temperature. Turning off this feature. ' + str(e))
-                            self.switchTemperature = False
-
-                    gpus.append({
-                        'gpu_utilization': gpuUtilization,
-                        'gpu_temperature': gpuTemperature,
-                        'vram_total': vramTotal,
-                        'vram_used': vramUsed,
-                        'vram_used_percent': vramPercent,
-                    })
 
         return {
             'device_type': gpuType,
