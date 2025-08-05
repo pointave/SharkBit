@@ -11,8 +11,8 @@ SharkBit is a desktop application for video cropping, editing, and exporting, wi
 | `Q`         | Close program                                               |
 | `W`         | Open current folder                                         |
 | `E / R`     | Previous / Next file in list                                |
-| `T`         | Fullscreen toggle                                           |
-| `Y`         | Pull-out window                                             |
+| `T`         | Theme toggle                                                |
+| `Y`         | Pull-out window (Shift pulls out multi-vid)                 |
 | `A / S`     | Step down / up one frame                                    |
 | `D / F`     | Jump 113 frames (Shift/Ctrl doubles/quadruples jump amount) |
 | `G`         | Toggle random sorting                                       |
@@ -20,8 +20,9 @@ SharkBit is a desktop application for video cropping, editing, and exporting, wi
 | `Z`         | Toggle trim preview                                         |
 | `X`         | Auto-advance toggle                                         |
 | `C`         | Screenshot                                                  |
-| `V`         | Play / Pause                                                |
+| `V / Enter` | Play / Pause                                                |
 | `B`         | Save clip (cropped or uncropped)                            |
+| `I`         | Show info (if you use show_text comfynode you'll get prompt)|
 | `/`         | Search                                                      |
 | `Backspace` | Minimize                                                    |
 
