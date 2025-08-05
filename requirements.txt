@@ -9,3 +9,7 @@ pynvml
 Pillow
 deepdiff
 piexif
+librosa
+pygame
+mutagen
+pyqtgraph
