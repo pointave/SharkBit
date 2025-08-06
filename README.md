@@ -41,6 +41,7 @@ pip install -r requirements.txt
 ```
 
 > **Optional:** Add `yt-dlp.exe` to the `sharkbit` folder to enable YouTube downloads.
+> ALSO if you want you can install pytorch in the environment it will speed up exports.
 
 ---
 
@@ -79,5 +80,8 @@ See `requirements.txt` for full list. Key packages:
 * Ffmpeg
 
 ---
+
+DISCLAMER  
+There is still no audio, should come in near future. The themes are wip as well, saw that new model on the llmarena that makes very modern UI's that I hope will make each pretty and unique.
 
 For more details, see the code comments and individual module docstrings.
