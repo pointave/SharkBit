@@ -1,6 +1,6 @@
 # SharkBit
 
-SharkBit is a desktop application for video cropping, editing, and exporting, with advanced features like scene detection and multi-video playback. It provides a modern graphical user interface (GUI) and leverages OpenCV, ffmpeg, and other libraries for fast video processing.
+SharkBit is a desktop application for video cropping, editing, and exporting, with advanced features like scene detection and multi-video playback. It provides a modern graphical user interface (GUI) and leverages OpenCV, ffmpeg, and other libraries for fast video processing.  ***EXPORT with shortcut B needs to have you push any number key first before it will export.*** 
 
 ---
 
