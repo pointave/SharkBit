@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Palenight Theme - Dreamy Ethereal Aesthetic */
 QWidget {
     background-color: #292d3e;
@@ -246,4 +247,116 @@ QLabel#status_label {
     text-shadow: 0 0 10px rgba(255, 203, 139, 0.7);
     text-transform: uppercase;
     letter-spacing: 1px;
+=======
+/* Glasswave Theme - Sleek Frosted Ocean Aesthetic */
+QWidget {
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #c3e9f8,
+        stop:1 #90c7ec
+    );
+    color: #0f1e2e;
+    font-family: 'Segoe UI', 'Verdana', sans-serif;
+    font-size: 14px;
+}
+
+/* Buttons - Frosted Glass Look */
+QPushButton {
+    background-color: rgba(255, 255, 255, 0.6);
+    color: #0f1e2e;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 8px rgba(15, 30, 46, 0.2);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+QPushButton:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 12px rgba(15, 30, 46, 0.3);
+}
+QPushButton:pressed {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Inputs - Smooth Borders */
+QLineEdit, QComboBox, QSpinBox {
+    background-color: rgba(255, 255, 255, 0.7);
+    color: #0f1e2e;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+    padding: 6px 10px;
+    selection-background-color: #0f1e2e;
+    selection-color: #ffffff;
+    backdrop-filter: blur(4px);
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border-color: #3a8fd5;
+    box-shadow: 0 0 8px rgba(58, 143, 213, 0.5);
+}
+
+/* Lists - Glass Panels */
+QListWidget {
+    background-color: rgba(255, 255, 255, 0.5);
+    color: #0f1e2e;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+QListWidget::item:selected {
+    background-color: rgba(58, 143, 213, 0.7);
+    color: #ffffff;
+}
+QListWidget::item:hover {
+    background-color: rgba(58, 143, 213, 0.3);
+}
+
+/* Sliders - Minimal Track */
+QSlider::groove:horizontal {
+    background-color: rgba(15, 30, 46, 0.15);
+    height: 8px;
+    border-radius: 4px;
+}
+QSlider::handle:horizontal {
+    background-color: #3a8fd5;
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+}
+
+/* Checkboxes - Rounded Soft */
+QCheckBox {
+    color: #0f1e2e;
+}
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+}
+QCheckBox::indicator:checked {
+    background-color: #3a8fd5;
+    border-color: #0f1e2e;
+}
+
+/* Progress Bar - Wave Accent */
+QProgressBar {
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    text-align: center;
+    color: #0f1e2e;
+    font-weight: bold;
+}
+QProgressBar::chunk {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #3a8fd5,
+        stop:1 #6ed0f6
+    );
+    border-radius: 4px;
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)
 }

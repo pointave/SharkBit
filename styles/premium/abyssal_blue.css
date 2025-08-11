@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Ocean Depths Theme - Mysterious Deep Sea Aesthetic */
 QWidget {
     background-color: #001122;
@@ -282,3 +283,85 @@ QLabel#status_label {
     text-transform: uppercase;
     letter-spacing: 2px;
 } 
+=======
+/* Ocean Depths 2.0 - Readable Deep Sea UI */
+QWidget {
+    background-color: #00162a;
+    color: #e6faff; /* Light text for strong contrast */
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 14px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #005b80;
+    color: #ffffff;
+    border: 2px solid #00CED1;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 0 0 8px rgba(0, 206, 209, 0.6);
+}
+QPushButton:hover {
+    background-color: #00CED1;
+    color: #00162a;
+    box-shadow: 0 0 12px rgba(0, 206, 209, 0.9);
+}
+QPushButton:pressed {
+    background-color: #004466;
+}
+
+/* Inputs */
+QLineEdit, QComboBox, QSpinBox {
+    background-color: #ffffff;
+    color: #00162a;
+    border: 2px solid #00CED1;
+    border-radius: 6px;
+    padding: 6px 10px;
+    selection-background-color: #00CED1;
+    selection-color: #ffffff;
+    font-size: 13px;
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border-color: #FF6B6B;
+}
+
+/* List Widgets */
+QListWidget {
+    background-color: #003c56;
+    color: #ffffff;
+    border: 2px solid #00CED1;
+    border-radius: 8px;
+    padding: 6px;
+}
+QListWidget::item:selected {
+    background-color: #00CED1;
+    color: #00162a;
+}
+QListWidget::item:hover {
+    background-color: rgba(0, 206, 209, 0.3);
+}
+
+/* Sliders */
+QSlider::groove:horizontal {
+    background-color: #004466;
+    height: 10px;
+    border-radius: 5px;
+}
+QSlider::handle:horizontal {
+    background-color: #00CED1;
+    width: 20px;
+    height: 20px;
+    margin: -5px 0;
+    border-radius: 10px;
+}
+
+/* Checkboxes */
+QCheckBox {
+    color: #ffffff;
+}
+QCheckBox::indicator {
+    width: 18px;
+    heigh
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)

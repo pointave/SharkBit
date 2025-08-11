@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* GitHub Light Theme - Clean Modern Aesthetic */
 QWidget {
     background-color: #ffffff;
@@ -300,3 +301,82 @@ QTabBar::tab:hover {
     border-color: #0969da;
     box-shadow: 0 1px 3px rgba(27, 31, 35, 0.08);
 }
+=======
+/* Solarpunk Garden Theme - Bright Eco-Futuristic Aesthetic */
+QWidget {
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #f7f9e3,
+        stop:1 #d8f0d2
+    );
+    color: #2f3e1f;
+    font-family: 'Segoe UI', 'Verdana', sans-serif;
+    font-size: 14px;
+}
+
+/* Buttons - Soft Gold Panels */
+QPushButton {
+    background-color: #f0e68c;
+    color: #2f3e1f;
+    border: 2px solid #a3c76d;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 6px rgba(163, 199, 109, 0.5);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+QPushButton:hover {
+    background-color: #cde5a0;
+    box-shadow: 0 0 12px rgba(163, 199, 109, 0.8);
+}
+QPushButton:pressed {
+    background-color: #b5d18a;
+}
+
+/* Inputs - Fresh Leaf Borders */
+QLineEdit, QComboBox, QSpinBox {
+    background-color: #ffffff;
+    color: #2f3e1f;
+    border: 2px solid #a3c76d;
+    border-radius: 6px;
+    padding: 6px 10px;
+    selection-background-color: #a3c76d;
+    selection-color: #ffffff;
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border-color: #6b9c4f;
+    background-color: #f5ffe9;
+}
+
+/* Lists - Gentle Plant Accents */
+QListWidget {
+    background-color: #edf6e3;
+    border: 2px solid #a3c76d;
+    border-radius: 6px;
+}
+QListWidget::item:selected {
+    background-color: #a3c76d;
+    color: #ffffff;
+}
+QListWidget::item:hover {
+    background-color: rgba(163, 199, 109, 0.3);
+}
+
+/* Sliders - Sunlit Tracks */
+QSlider::groove:horizontal {
+    background-color: #cde5a0;
+    height: 10px;
+    border-radius: 5px;
+}
+QSlider::handle:horizontal {
+    background-color: #a3c76d;
+    width: 18px;
+    height: 18px;
+    margin: -4px 0;
+    border-radius: 9px;
+}
+
+/* Checkboxes - Seed Sprout Style */
+QCheckBox {
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)

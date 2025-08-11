@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Ice Cave Theme - Frozen Crystalline Aesthetic */
 QWidget {
     background-color: #e3f2fd;
@@ -298,4 +299,71 @@ QTabBar::tab:hover {
     color: #0d47a1;
     border-color: #2e7d32;
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+=======
+/* Cyberpunk Hologram Theme */
+QWidget {
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #0b0014,
+        stop:0.4 #1a0033,
+        stop:0.8 #33004d,
+        stop:1 #0b0014
+    );
+    color: #e2e2ff;
+    font-family: 'Segoe UI', 'Orbitron', Arial, sans-serif;
+    font-size: 16px;
+}
+
+/* General Controls - Glassy Panels */
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: rgba(20, 20, 40, 0.6);
+    color: #fff0ff;
+    border: 1.5px solid rgba(255, 0, 153, 0.8);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 16px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 15px rgba(255, 0, 153, 0.5);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* Buttons - Neon Hover */
+QPushButton:hover {
+    background-color: rgba(255, 0, 153, 0.85);
+    color: #0b0014;
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.9), 0 0 40px rgba(255, 0, 153, 0.7);
+}
+QPushButton:pressed {
+    transform: scale(0.97);
+}
+
+/* Inputs - Cyan Selection */
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #00ffff;
+    selection-color: #0b0014;
+}
+
+/* List Widgets */
+QListWidget::item {
+    padding: 4px 8px;
+    margin: 0;
+    background: transparent;
+    border: none;
+}
+QListWidget::item:selected {
+    background-color: rgba(0, 255, 255, 0.85);
+    color: #0b0014;
+}
+QListWidget::item:hover {
+    background-color: rgba(0, 255, 255, 0.4);
+}
+
+/* Status Label - Electric Glow */
+QLabel#status_label {
+    color: #00ffff;
+    font-weight: bold;
+    text-shadow: 0 0 10px #00ffff;
+    letter-spacing: 0.6px;
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)
 }

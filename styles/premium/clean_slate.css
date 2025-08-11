@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Modern Light Theme - Clean Minimalist Aesthetic */
 QWidget {
     background-color: #ffffff;
@@ -246,3 +247,107 @@ QLabel#status_label {
     text-transform: uppercase;
     letter-spacing: 1px;
 } 
+=======
+/* High-Contrast Aurora Mist Theme */
+QWidget {
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #eef5ff,   /* soft ice blue */
+        stop:1 #d6e8f7    /* light sky blue */
+    );
+    color: #1c1c1c; /* dark gray text for clarity */
+    font-family: 'Segoe UI', 'Verdana', sans-serif;
+    font-size: 14px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #ffffff;
+    color: #1c1c1c;
+    border: 2px solid #5aa1d8;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-weight: 600;
+    box-shadow: 0 0 6px rgba(90, 161, 216, 0.3);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+QPushButton:hover {
+    background-color: #5aa1d8;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(90, 161, 216, 0.6);
+}
+QPushButton:pressed {
+    background-color: #3e82b6;
+}
+
+/* Inputs */
+QLineEdit, QComboBox, QSpinBox {
+    background-color: #ffffff;
+    color: #1c1c1c;
+    border: 2px solid #5aa1d8;
+    border-radius: 4px;
+    padding: 6px 10px;
+    selection-background-color: #5aa1d8;
+    selection-color: #ffffff;
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border-color: #3e82b6;
+}
+
+/* Lists */
+QListWidget {
+    background-color: #ffffff;
+    color: #1c1c1c;
+    border: 2px solid #5aa1d8;
+    border-radius: 4px;
+}
+QListWidget::item:selected {
+    background-color: #5aa1d8;
+    color: #ffffff;
+}
+QListWidget::item:hover {
+    background-color: rgba(90, 161, 216, 0.2);
+}
+
+/* Sliders */
+QSlider::groove:horizontal {
+    background-color: #d6e8f7;
+    height: 8px;
+    border-radius: 4px;
+}
+QSlider::handle:horizontal {
+    background-color: #5aa1d8;
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+}
+
+/* Checkboxes */
+QCheckBox {
+    color: #1c1c1c;
+}
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    background-color: #ffffff;
+    border: 2px solid #5aa1d8;
+    border-radius: 4px;
+}
+QCheckBox::indicator:checked {
+    background-color: #5aa1d8;
+    border-color: #3e82b6;
+}
+
+/* Progress Bar */
+QProgressBar {
+    background-color: #ffffff;
+    border: 2px solid #5aa1d8;
+    border-radius: 6px;
+    text-align: center;
+    color: #1c1c1c;
+    font-weight: bold;
+}
+QProgressBar::chunk {
+    background-color: #5aa1d8;
+}
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)

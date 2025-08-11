@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Sunset Glow Theme - Warm Elegant Aesthetic */
 QWidget {
     background: linear-gradient(135deg, #2c1810 0%, #1a0f0a 50%, #0d0805 100%);
@@ -298,4 +299,68 @@ QTabBar::tab:hover {
     color: #f4e4bc;
     border-color: #daa520;
     box-shadow: 0 2px 6px rgba(210, 105, 30, 0.3);
+=======
+/* Aurora Borealis Glow Theme */
+QWidget {
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #0a0f1d, 
+        stop:0.5 #1a3c54, 
+        stop:1 #29ffd5
+    );
+    color: #e4feff;
+    font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+    font-size: 17px;
+}
+
+/* General Controls */
+QPushButton, QComboBox, QLineEdit, QSpinBox, QCheckBox, QListWidget, QSlider, QTreeWidget, QLabel {
+    background-color: rgba(30, 60, 90, 0.85);
+    color: #e4feff;
+    border: 1.5px solid rgba(41, 255, 213, 0.8);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 17px;
+    box-shadow: 0 0 10px rgba(41, 255, 213, 0.6);
+    transition: background-color 0.4s ease, box-shadow 0.4s ease, transform 0.2s ease;
+}
+
+/* Button Hover & Active States */
+QPushButton:hover {
+    background-color: rgba(41, 255, 213, 0.9);
+    color: #0a0f1d;
+    transform: scale(1.03);
+    box-shadow: 0 0 18px rgba(41, 255, 213, 0.9);
+}
+QPushButton:pressed {
+    transform: scale(0.98);
+}
+
+/* Input Selection */
+QLineEdit, QComboBox, QSpinBox {
+    selection-background-color: #29ffd5;
+    selection-color: #0a0f1d;
+}
+
+/* List Widgets */
+QListWidget::item {
+    padding: 4px 6px;
+    margin: 0;
+    background: transparent;
+    border: none;
+}
+QListWidget::item:selected {
+    background-color: rgba(41, 255, 213, 0.85);
+    color: #0a0f1d;
+}
+QListWidget::item:hover {
+    background-color: rgba(41, 255, 213, 0.4);
+}
+
+/* Status Label */
+QLabel#status_label {
+    color: #29ffd5;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)
 }

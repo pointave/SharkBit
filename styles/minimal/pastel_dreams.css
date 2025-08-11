@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Pastel Bliss Theme - Soft Dreamy Aesthetic */
 QWidget {
     background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 50%, #e8f2ff 100%);
@@ -298,4 +299,137 @@ QTabBar::tab:hover {
     color: #5a6c7d;
     border-color: #88d8c0;
     box-shadow: 0 2px 8px rgba(168, 230, 207, 0.3);
+=======
+/* Prismatic Eclipse Theme - Cosmic Iridescent UI */
+QWidget {
+    background: qradialgradient(
+        cx:0.5, cy:0.5, radius:1,
+        fx:0.5, fy:0.5,
+        stop:0 #0a0a0a,
+        stop:1 #1e003a
+    );
+    color: #f4f4f4;
+    font-family: 'Segoe UI', 'Verdana', sans-serif;
+    font-size: 14px;
+}
+
+/* Buttons - Iridescent Glow */
+QPushButton {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:1,
+        stop:0 #ff5f6d,
+        stop:0.5 #ffc371,
+        stop:1 #4facfe
+    );
+    color: #0a0a0a;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+QPushButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+QPushButton:pressed {
+    transform: translateY(0);
+}
+
+/* Inputs - Edge Light */
+QLineEdit, QComboBox, QSpinBox {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #f4f4f4;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    padding: 6px 10px;
+    selection-background-color: #ffc371;
+    selection-color: #000;
+    background-clip: padding-box;
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border: 2px solid #4facfe;
+    box-shadow: 0 0 10px rgba(79, 172, 254, 0.6);
+}
+
+/* Lists - Deep Space Panels */
+QListWidget {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
+QListWidget::item:selected {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #4facfe,
+        stop:1 #00f2fe
+    );
+    color: #000;
+}
+QListWidget::item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Sliders - Spectrum Trail */
+QSlider::groove:horizontal {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #ff5f6d,
+        stop:0.25 #ffc371,
+        stop:0.5 #4facfe,
+        stop:0.75 #43e97b,
+        stop:1 #f9f871
+    );
+    height: 8px;
+    border-radius: 4px;
+}
+QSlider::handle:horizontal {
+    background-color: #fff;
+    width: 16px;
+    height: 16px;
+    margin: -4px 0;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255,255,255,0.8);
+}
+
+/* Checkboxes - Mini Eclipse */
+QCheckBox {
+    color: #f4f4f4;
+}
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+QCheckBox::indicator:checked {
+    background: qradialgradient(
+        cx:0.5, cy:0.5, radius:1,
+        stop:0 #ffc371,
+        stop:1 #ff5f6d
+    );
+    border: none;
+}
+
+/* Progress Bar - Radiant Beam */
+QProgressBar {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    text-align: center;
+    color: #f4f4f4;
+    font-weight: bold;
+}
+QProgressBar::chunk {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:0,
+        stop:0 #ff5f6d,
+        stop:0.5 #ffc371,
+        stop:1 #4facfe
+    );
+    border-radius: 4px;
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)
 }

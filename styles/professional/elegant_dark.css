@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* One Dark Theme - Sophisticated Elegant Aesthetic */
 QWidget {
     background-color: #282c34;
@@ -246,3 +247,65 @@ QLabel#status_label {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+=======
+/* Celestial Dreamscape Theme - Surreal Fantasy Sky UI */
+QWidget {
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #0a0826,        /* deep midnight blue */
+        stop:0.5 #1b1464,      /* cosmic indigo */
+        stop:1 #432371         /* amethyst dusk */
+    );
+    color: #f5f3ff;
+    font-family: 'Cinzel Decorative', 'Garamond', serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+/* Buttons - Moonlit Glow */
+QPushButton {
+    background-color: rgba(67, 35, 113, 0.8);
+    color: #f5f3ff;
+    border: 2px solid #d6b3ff;
+    border-radius: 12px;
+    padding: 8px 18px;
+    font-weight: bold;
+    text-shadow: 0 0 8px #d6b3ff;
+    box-shadow: 0 0 15px rgba(214, 179, 255, 0.4);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+QPushButton:hover {
+    background-color: #d6b3ff;
+    color: #0a0826;
+    box-shadow: 0 0 25px rgba(214, 179, 255, 0.9);
+    transform: translateY(-2px);
+}
+QPushButton:pressed {
+    background-color: #9e7bd6;
+    transform: translateY(0);
+}
+
+/* Inputs - Starry Borders */
+QLineEdit, QComboBox, QSpinBox {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f5f3ff;
+    border: 2px solid #9e7bd6;
+    border-radius: 8px;
+    padding: 6px 12px;
+    selection-background-color: #d6b3ff;
+    selection-color: #0a0826;
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border-color: #fcefff;
+    box-shadow: 0 0 20px rgba(252, 239, 255, 0.7);
+}
+
+/* Lists - Constellation Highlights */
+QListWidget {
+    background-color: rgba(15, 10, 40, 0.7);
+    border: 2px solid #9e7bd6;
+    border-radius: 10px;
+    padding: 6px;
+}
+QListWidget::ite
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)

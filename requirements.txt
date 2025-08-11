@@ -9,7 +9,10 @@ pynvml
 Pillow
 deepdiff
 piexif
+<<<<<<< HEAD
 librosa
 pygame
 mutagen
 pyqtgraph
+=======
+>>>>>>> 4bfdca0 (Beautify the themes, half-way there)
