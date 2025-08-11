@@ -325,7 +325,8 @@ class MultiVideoCell(QWidget):
 class VideoCropper(QWidget):
     def open_yt_folder(self):
         import os
-        yt_folder = r"M:\video\yt"
+        #yt_folder = r"----CUSTOM PATH HERE----"
+        yt_folder = os.path.join(os.environ["USERPROFILE"], "Videos", "youtube")
         if not os.path.exists(yt_folder):
             QMessageBox.critical(self, "YT Folder Not Found", f"{yt_folder} does not exist.")
             return
