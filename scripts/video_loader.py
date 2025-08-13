@@ -29,17 +29,29 @@ class VideoLoader:
         self.main_app.video_files = []
         
         video_extensions = ('.mp4', '.avi', '.mkv', '.mov', '.wmv')
+        audio_extensions = ('.mp3', '.wav', '.flac', '.m4a', '.aac', '.ogg')
         
         # Use os.scandir for better performance
         try:
             with os.scandir(self.main_app.folder_path) as entries:
                 for entry in entries:
-                    if entry.is_file() and entry.name.lower().endswith(video_extensions):
-                        self.main_app.video_files.append({
-                            "original_path": entry.path,
-                            "display_name": entry.name,
-                            "copy_number": 0
-                        })
+                    if not entry.is_file():
+                        continue
+                    name = entry.name.lower()
+                    if getattr(self.main_app, 'audio_mode', False):
+                        if name.endswith(audio_extensions):
+                            self.main_app.video_files.append({
+                                "original_path": entry.path,
+                                "display_name": entry.name,
+                                "copy_number": 0
+                            })
+                    else:
+                        if name.endswith(video_extensions):
+                            self.main_app.video_files.append({
+                                "original_path": entry.path,
+                                "display_name": entry.name,
+                                "copy_number": 0
+                            })
             
             # Populate list by current sort mode
             if hasattr(self.main_app, 'sort_dropdown'):
@@ -53,7 +65,10 @@ class VideoLoader:
                 self.main_app.current_video_index = 0
                 self.main_app.video_list.setCurrentRow(0)
                 from PyQt6.QtCore import QTimer
-                QTimer.singleShot(0, lambda: self.load_video(self.main_app.video_list.item(0)))
+                if getattr(self.main_app, 'audio_mode', False):
+                    QTimer.singleShot(0, lambda: self.load_audio(self.main_app.video_list.item(0)))
+                else:
+                    QTimer.singleShot(0, lambda: self.load_video(self.main_app.video_list.item(0)))
         except Exception as e:
             print(f"Error loading folder contents: {e}")
 
@@ -155,6 +170,10 @@ class VideoLoader:
         if idx < 0 or idx >= len(video_list_source):
             return
         video_entry = video_list_source[idx]
+        # If in audio mode, route to audio loader instead
+        if getattr(self.main_app, 'audio_mode', False):
+            self.load_audio(item)
+            return
         self.main_app.current_video = video_entry["display_name"]
         if self.main_app.cap:
             self.main_app.cap.release()
@@ -165,6 +184,24 @@ class VideoLoader:
         if self.main_app.current_video not in self.main_app.crop_regions:
             self.main_app.crop_regions[self.main_app.current_video] = None
         self.main_app.editor.load_video(video_entry)
+
+    def load_audio(self, item):
+        idx = self.main_app.video_list.row(item)
+        filtered = getattr(self.main_app, 'filtered_video_files', None)
+        src = filtered if filtered is not None and len(filtered) == self.main_app.video_list.count() else self.main_app.video_files
+        if idx < 0 or idx >= len(src):
+            return
+        entry = src[idx]
+        self.main_app.current_video = entry["display_name"]
+        # Delegate to the main app's audio loader
+        if hasattr(self.main_app, 'load_audio_entry'):
+            self.main_app.load_audio_entry(entry)
+        else:
+            # Fallback: just update status
+            try:
+                self.main_app.update_status(f"Audio selected: {entry['display_name']}")
+            except Exception:
+                pass
 
 
     def duplicate_clip(self):
