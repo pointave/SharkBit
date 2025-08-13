@@ -113,6 +113,8 @@ class MultiVideoCell(QWidget):
         # Enable mouse tracking for hover detection
         self.setMouseTracking(True)
         self.frame.setMouseTracking(True)
+        # Enable hover events explicitly for better responsiveness
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         
     def eventFilter(self, obj, event):
         """Event filter to handle drag events on child widgets"""
@@ -164,6 +166,12 @@ class MultiVideoCell(QWidget):
             self.is_dragging = False
             self.drag_start_pos = None
             self.set_highlighted(False)  # Restore normal styling
+
+    def enterEvent(self, event):
+        # Trigger hover selection immediately on enter to improve fast movements
+        if self.hover_callback:
+            self.hover_callback(self.grid_index)
+        super().enterEvent(event)
             
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton and not self.is_dragging:
@@ -404,23 +412,319 @@ class VideoCropper(QWidget):
             self.update_status("Processing video...")
 
     def toggle_audio(self):
-        """Toggle audio on/off"""
-        # Only allow audio in single-video mode
-        if self.multi_mode:
-            self.audio_enabled = False
-            self.audio_button.setChecked(False)
-            self.audio_button.setText("🔇 Audio Off")
-            self.update_status("Audio disabled in multi-video mode")
-            return
-            
+        """Toggle audio on/off (works in single or multi mode)."""
         self.audio_enabled = not self.audio_enabled
-        self.audio_button.setText("🔊 Audio On" if self.audio_enabled else "🔇 Audio Off")
+        # Unmute/mute output but keep current volume value
+        self.audio_button.setChecked(self.audio_enabled)
         
-        # Update audio state for the current video player
-        if hasattr(self, 'player') and hasattr(self.player, 'audio_output'):
-            self.player.audio_output.setMuted(not self.audio_enabled)
+        # Update audio state for the single-video audio player
+        if hasattr(self, 'audio_output') and hasattr(self, 'audio_player'):
+            self.audio_output.setMuted(not self.audio_enabled)
+            # Enforce 5% volume on the very first enable click
+            if self.audio_enabled and not self._first_audio_enable_done:
+                try:
+                    self.audio_output.setVolume(0.05)
+                except Exception:
+                    pass
+                self._first_audio_enable_done = True
+            # If enabling audio while playing, start audio playback; otherwise pause
+            if self.audio_enabled and getattr(self, 'is_playing', False):
+                if self.audio_player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+                    self.audio_player.play()
+            else:
+                if self.audio_player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+                    self.audio_player.pause()
             
+        # Update UI label after any volume/state changes
+        self._update_audio_button_label()
         self.update_status(f"Audio {'enabled' if self.audio_enabled else 'disabled'}")
+
+    def _update_audio_button_label(self):
+        """Update audio button text to reflect on/off and volume level."""
+        try:
+            if self.multi_mode:
+                self.audio_button.setText("🔇 Audio Off")
+                self.audio_button.setChecked(False)
+                return
+            vol = 0.0
+            if hasattr(self, 'audio_output'):
+                vol = float(self.audio_output.volume())
+            pct = int(round(vol * 100))
+            if not getattr(self, 'audio_enabled', False) or pct == 0:
+                self.audio_button.setText("🔇 Audio Off")
+            else:
+                icon = "🔊"
+                if vol < 0.34:
+                    icon = "🔈"
+                elif vol < 0.67:
+                    icon = "🔉"
+                else:
+                    icon = "🔊"
+                self.audio_button.setText(f"{icon} {pct}%")
+            self.audio_button.setChecked(bool(getattr(self, 'audio_enabled', False)))
+        except Exception:
+            # Never crash UI for label update
+            pass
+
+    def set_volume(self, volume: float):
+        """Set audio output volume (0.0-1.0) and update UI. Enables audio if increased in single-video mode."""
+        try:
+            if not hasattr(self, 'audio_output'):
+                return
+            # Clamp
+            volume = max(0.0, min(1.0, float(volume)))
+            self.audio_output.setVolume(volume)
+            # If user raised volume while audio disabled (and not in multi-mode), enable it
+            if not self.multi_mode and volume > 0 and not getattr(self, 'audio_enabled', False):
+                self.audio_enabled = True
+                self.audio_output.setMuted(False)
+                if getattr(self, 'is_playing', False) and self.audio_player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+                    self.audio_player.play()
+            # If volume reached 0, keep state but show Off label
+            self._update_audio_button_label()
+        except Exception:
+            pass
+
+    def _set_audio_source(self, video_path: str):
+        """Set the audio player's media source to the given file (single-video mode)."""
+        try:
+            url = QUrl.fromLocalFile(video_path)
+            self.audio_player.setSource(url)
+            self.audio_player.setPosition(0)
+            # Reset to audio-master at start of each clip; VideoEditor may adaptively change it
+            self._audio_master = True
+        except Exception as e:
+            print(f"Failed to set audio source: {e}")
+
+    def release_current_media_handles(self):
+        """Release cv2 capture and detach QMediaPlayer source to avoid Windows file locks.
+        Call this before deleting or renaming the current video file.
+        """
+        try:
+            # Stop playback state
+            self.is_playing = False
+            # Stop timers via VideoEditor if present
+            if hasattr(self, 'video_editor') and hasattr(self.video_editor, '_stop_timer'):
+                try:
+                    self.video_editor._stop_timer()
+                except Exception:
+                    pass
+            # Pause audio and detach source
+            if hasattr(self, 'audio_player'):
+                try:
+                    self.audio_player.stop()
+                    self.audio_output.setMuted(True)
+                    from PyQt6.QtCore import QUrl
+                    self.audio_player.setSource(QUrl())
+                except Exception:
+                    pass
+            # Release OpenCV capture
+            if getattr(self, 'cap', None) is not None:
+                try:
+                    self.cap.release()
+                except Exception:
+                    pass
+                self.cap = None
+        except Exception:
+            pass
+
+    def load_audio_entry(self, entry: dict):
+        """Load an audio file entry when in Audio Mode.
+        Expects entry dict with keys: 'original_path', 'display_name'.
+        """
+        try:
+            path = entry.get('original_path')
+            if not path:
+                return
+            # Stop any current audio and set the new source
+            if hasattr(self, 'audio_player'):
+                try:
+                    self.audio_player.stop()
+                except Exception:
+                    pass
+            # Reuse existing helper to set source if available
+            try:
+                from PyQt6.QtCore import QUrl
+                self.audio_player.setSource(QUrl.fromLocalFile(path))
+                self.audio_player.setPosition(0)
+            except Exception:
+                pass
+            # Track current audio path for export
+            try:
+                self.current_audio_path = path
+            except Exception:
+                pass
+            # Load waveform into audio editor if present
+            if hasattr(self, 'audio_editor') and self.audio_editor is not None:
+                try:
+                    self.audio_editor.load(path)
+                    # Connect playhead sync once
+                    if not hasattr(self, '_audio_pos_connected') or not self._audio_pos_connected:
+                        try:
+                            self.audio_player.positionChanged.connect(lambda ms: self.audio_editor.set_playhead_ms(int(ms)))
+                            self._audio_pos_connected = True
+                        except Exception:
+                            self._audio_pos_connected = False
+                except Exception:
+                    pass
+            self.current_video = entry.get('display_name', path)
+            # Do not auto-play; respect current audio_enabled and play state
+            self.update_status(f"Audio loaded: {self.current_video}")
+        except Exception as e:
+            print(f"load_audio_entry error: {e}")
+
+    def export_current_audio_clip(self):
+        """Export the selected trim segment to a 'Clips' subfolder beside the source file using ffmpeg.
+        Works only in Audio Mode with a loaded audio file.
+        """
+        try:
+            if not getattr(self, 'audio_mode', False):
+                self.update_status("Not in Audio Mode")
+                return
+            src = getattr(self, 'current_audio_path', None)
+            if not src:
+                self.update_status("No audio loaded")
+                return
+            editor = getattr(self, 'audio_editor', None)
+            if editor is None:
+                self.update_status("Waveform not available")
+                return
+            s_ms, e_ms = editor.get_trim_points()
+            if e_ms <= s_ms:
+                self.update_status("Invalid trim range")
+                return
+            # Build output path
+            import os, subprocess, shlex
+            folder = os.path.dirname(src)
+            clips_dir = os.path.join(folder, 'Clips')
+            os.makedirs(clips_dir, exist_ok=True)
+            base = os.path.splitext(os.path.basename(src))[0]
+            out_name = f"{base}_{s_ms}ms_{e_ms}ms.mp3"
+            out_path = os.path.join(clips_dir, out_name)
+            # ffmpeg command: -ss before -i for fast, and -to duration; re-encode to mp3 for compatibility
+            start_sec = s_ms / 1000.0
+            duration_sec = (e_ms - s_ms) / 1000.0
+            cmd = [
+                'ffmpeg', '-y',
+                '-ss', str(start_sec),
+                '-i', src,
+                '-t', str(duration_sec),
+                '-vn', '-acodec', 'libmp3lame', '-b:a', '192k',
+                out_path
+            ]
+            try:
+                completed = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                if completed.returncode == 0:
+                    self.update_status(f"Exported: {out_path}")
+                else:
+                    self.update_status(f"Export failed: {completed.stderr.splitlines()[-1] if completed.stderr else 'ffmpeg error'}")
+            except FileNotFoundError:
+                self.update_status("ffmpeg not found. Please install ffmpeg and ensure it's in PATH.")
+        except Exception as e:
+            print(f"export_current_audio_clip error: {e}")
+
+    def move_path_to_trash(self, src_path: str, trash_dir: str) -> bool:
+        """Move the given file to trash_dir safely on Windows.
+        - Ensures media handles are released first
+        - Uses os.replace for same-drive atomic move when possible
+        - Falls back to shutil.move
+        - Retries a few times to avoid transient WinError 32
+        Returns True on success, False otherwise.
+        """
+        import os
+        import shutil
+        import time
+        import gc
+        try:
+            # Release any open handles that could lock src_path
+            self.release_current_media_handles()
+            gc.collect()
+            os.makedirs(trash_dir, exist_ok=True)
+            filename = os.path.basename(src_path)
+            dest_path = os.path.join(trash_dir, filename)
+
+            # If destination exists, generate a unique name
+            if os.path.exists(dest_path):
+                base, ext = os.path.splitext(filename)
+                i = 1
+                while True:
+                    candidate = f"{base}__{i}{ext}"
+                    cand_path = os.path.join(trash_dir, candidate)
+                    if not os.path.exists(cand_path):
+                        dest_path = cand_path
+                        break
+                    i += 1
+
+            # Same-drive detection
+            same_drive = os.path.splitdrive(src_path)[0].lower() == os.path.splitdrive(dest_path)[0].lower()
+            attempts = 5
+            for attempt in range(attempts):
+                try:
+                    if same_drive:
+                        os.replace(src_path, dest_path)
+                    else:
+                        shutil.move(src_path, dest_path)
+                    return True
+                except PermissionError:
+                    # Likely WinError 32; wait and retry
+                    time.sleep(0.15 * (attempt + 1))
+                    self.release_current_media_handles()
+                    gc.collect()
+                except Exception as e:
+                    # On other errors, retry a couple of times then give up
+                    time.sleep(0.1 * (attempt + 1))
+            return False
+        except Exception:
+            return False
+
+    def _sync_audio_position(self):
+        """Sync audio position to current OpenCV frame position in ms."""
+        try:
+            if not self.cap or not getattr(self, 'video_fps', 0):
+                return
+            frame_idx = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+            fps = self.video_fps if self.video_fps else 30
+            ms = int(frame_idx * 1000 / fps)
+            # Avoid excessive seeks: only correct large drift and throttle to 250ms
+            if self.audio_enabled and getattr(self, 'is_playing', False):
+                current_ms = self.audio_player.position()
+                drift = abs(current_ms - ms)
+                from time import monotonic
+                now = monotonic()
+                if drift > 200 and (now - self._last_audio_sync_ts) > 0.25:
+                    self.audio_player.setPosition(ms)
+                    self._last_audio_sync_ts = now
+        except Exception as e:
+            # Non-fatal
+            pass
+
+    def _play_audio_if_needed(self):
+        """Begin audio playback if audio is enabled and playing (applies in single or multi mode)."""
+        if self.audio_enabled:
+            self.audio_output.setMuted(False)
+            # Align start position once when starting playback
+            self._force_audio_position_to_video()
+            if self.audio_player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+                self.audio_player.play()
+
+    def _pause_audio(self):
+        """Pause audio playback."""
+        if self.audio_player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+            self.audio_player.pause()
+
+    def _force_audio_position_to_video(self):
+        """Hard-set audio position to match video (used on start/seek)."""
+        try:
+            if not self.cap or not getattr(self, 'video_fps', 0):
+                return
+            frame_idx = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+            fps = self.video_fps if self.video_fps else 30
+            ms = int(frame_idx * 1000 / fps)
+            self.audio_player.setPosition(ms)
+            from time import monotonic
+            self._last_audio_sync_ts = monotonic()
+        except Exception:
+            pass
         
     def toggle_auto_advance(self):
         """Toggle auto-advance to next video after trim"""
@@ -517,6 +821,26 @@ class VideoCropper(QWidget):
         
         # Audio state
         self.audio_enabled = False
+        # Which clock is master when audio is enabled (adaptive): True => audio drives video
+        self._audio_master = True
+        # Track first-time enable to enforce initial default volume on first click
+        self._first_audio_enable_done = False
+        # Track first time audio is enabled to enforce initial default volume
+        self._first_audio_enable_done = False
+        # Single-video audio pipeline (QMediaPlayer for audio only)
+        self.audio_player = QMediaPlayer(self)
+        self.audio_output = QAudioOutput(self)
+        self.audio_player.setAudioOutput(self.audio_output)
+        self.audio_output.setMuted(True)
+        # Throttle parameters for audio sync
+        self._last_audio_sync_ts = 0.0  # seconds
+        try:
+            # Larger buffer can reduce crackling on some systems
+            self.audio_output.setBufferSize(32768)
+            # Default startup volume = 5%
+            self.audio_output.setVolume(0.05)
+        except Exception:
+            pass
         
         # Trimming properties
         self.trim_length = 113
@@ -540,6 +864,9 @@ class VideoCropper(QWidget):
         self.current_video_index = -1  # Start at -1 like gui-videotrim
         self.video_files = []
         self.playing = False
+        # Default frame delay for video playback timer (ms)
+        # Used by editor.playback_timer.start(self.video_delay)
+        self.video_delay = 33
         
         # UI widgets
         self.video_list = QListWidget()
@@ -563,8 +890,8 @@ class VideoCropper(QWidget):
         self.export_in_progress = False  # Instance-level flag
 
         # Initialize favorite folder settings (fixed)
-        #self.favorite_folder = r"--PUT YOUR PATH HERE__"
-        self.favorite_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
+        self.favorite_folder = r"C:\Users\point\Github\ComfyUI\output\!BEST\Video\4"
+        #self.favorite_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
         self.last_non_favorite_folder = ""
         self.favorite_active = False
 
@@ -702,6 +1029,30 @@ class VideoCropper(QWidget):
                 return False  # Let QListWidget handle up/down
             self.keyPressEvent(event)
             return True
+        # Audio button: use mouse wheel as a volume rocker
+        if hasattr(self, 'audio_button') and source is self.audio_button and event.type() == QEvent.Type.Wheel:
+            try:
+                # Determine step size: default 2%, Shift=fine (0.5%), Ctrl=coarse (10%)
+                modifiers = QApplication.keyboardModifiers()
+                if modifiers & Qt.KeyboardModifier.ControlModifier:
+                    step = 0.10
+                elif modifiers & Qt.KeyboardModifier.ShiftModifier:
+                    step = 0.005
+                else:
+                    step = 0.02
+                delta = event.angleDelta().y()
+                steps = max(1, abs(delta) // 120)  # typical wheel notch = 120
+                direction = 1 if delta > 0 else -1
+                increment = direction * step * steps
+                current = 0.0
+                if hasattr(self, 'audio_output'):
+                    current = float(self.audio_output.volume())
+                self.set_volume(current + increment)
+                event.accept()
+                return True
+            except Exception:
+                return False
+
         # This event filter is only used for the slider.
         if hasattr(self, 'slider') and source is self.slider:
             if event.type() == QMouseEvent.Type.MouseButtonPress:
@@ -747,14 +1098,7 @@ class VideoCropper(QWidget):
 
     def _update_multi_selection(self):
         if len(self.multi_selected_indices) > 1:
-            # Disable audio when entering multi-video mode
-            if self.audio_enabled:
-                self.audio_enabled = False
-                if hasattr(self, 'audio_button'):
-                    self.audio_button.setChecked(False)
-                    self.audio_button.setText("🔇 Audio Off")
-                if hasattr(self, 'player') and hasattr(self.player, 'audio_output'):
-                    self.player.audio_output.setMuted(True)
+            # Enter multi-video mode; keep existing audio state. Multi cells are muted by design.
             self.multi_mode = True
             self._setup_multi_mode()
         elif len(self.multi_selected_indices) == 1:
@@ -946,8 +1290,27 @@ class VideoCropper(QWidget):
                     event.accept()
                     return
             event.ignore()
+
+        # Improve hover selection: track mouse at the container level with expanded hitboxes
+        def multi_grid_mouse_move_event(event):
+            if not getattr(self, 'multi_video_widgets', None):
+                QWidget.mouseMoveEvent(self.multi_grid_widget, event)
+                return
+            pos = event.position().toPoint()
+            for i, cell in enumerate(self.multi_video_widgets):
+                # Expand hitbox to catch fast movement across gaps
+                rect = cell.geometry().adjusted(-8, -8, 8, 8)
+                if rect.contains(pos):
+                    if getattr(self, 'multi_focused_grid', -1) != i:
+                        self.multi_focused_grid = i
+                        self._highlight_multi_videos()
+                    break
+            QWidget.mouseMoveEvent(self.multi_grid_widget, event)
         
         self.multi_grid_widget.wheelEvent = multi_grid_wheel_event
+        # Enable container-level mouse tracking for better hover detection
+        self.multi_grid_widget.setMouseTracking(True)
+        self.multi_grid_widget.mouseMoveEvent = multi_grid_mouse_move_event
         
         # Show current layout mode in status
         layout_names = {'auto': 'Auto', 'vertical': 'Vertical (2 cols)', 'horizontal': 'Horizontal (3 cols)'}
@@ -1078,6 +1441,9 @@ class VideoCropper(QWidget):
         # Set a larger initial size that can be bigger than the main UI
         num_videos = len(self.multi_video_widgets)
         if num_videos <= 2:
+            initial_width = 1200
+            initial_height = 900
+        elif num_videos <= 3:
             initial_width = 1200
             initial_height = 600
         elif num_videos <= 4:
@@ -1337,13 +1703,25 @@ class VideoCropper(QWidget):
         os.makedirs(backup_folder, exist_ok=True)
         backup_path = os.path.join(backup_folder, os.path.basename(original_path))
         try:
-            # If the video is currently open, release the capture.
-            if self.cap is not None and self.current_video == video_name:
-                self.cap.release()
-                self.cap = None
-            shutil.move(original_path, backup_path)
+            # Fully release any media locks (OpenCV/QMediaPlayer)
+            self.release_current_media_handles()
+            # Perform safe move to trash (atomic rename on same drive)
+            moved = self.move_path_to_trash(original_path, backup_folder)
+            if not moved:
+                self.update_status("Move to trash failed (file may be locked)")
+                return
+            # Record backup path actually used (may be uniquified)
+            backup_path = os.path.join(backup_folder, os.path.basename(original_path))
+            if not os.path.exists(backup_path):
+                # If helper uniquified the name, resolve by scanning
+                base = os.path.basename(original_path)
+                name, ext = os.path.splitext(base)
+                candidates = [f for f in os.listdir(backup_folder) if f.startswith(name) and f.endswith(ext)]
+                if candidates:
+                    candidates.sort()
+                    backup_path = os.path.join(backup_folder, candidates[-1])
             self.deleted_clips_stack.append({
-                "entry": entry, 
+                "entry": entry,
                 "backup_path": backup_path,
                 "original_path": original_path,
                 "index": selected_row
@@ -1351,9 +1729,9 @@ class VideoCropper(QWidget):
             self.video_files.remove(entry)
             self.video_list.takeItem(selected_row)
             self.update_file_count()
-            print(f"Deleted {video_name} and moved to backup.")
+            self.update_status(f"Deleted {video_name} and moved to backup.")
 
-            # --- Fix: Select and preview the correct next item after deletion ---
+            # --- Select and preview the correct next item after deletion ---
             count = self.video_list.count()
             if count > 0:
                 # If we deleted the last item, move selection up, else stay at same index
@@ -2022,6 +2400,65 @@ class VideoCropper(QWidget):
 from scripts.shortcut_elements import keyPressEvent as shortcut_keyPressEvent
 
 def multi_mode_keyPressEvent(self, event):
+    # Audio-mode specific shortcuts: intercept before generic handlers
+    try:
+        if getattr(self, 'audio_mode', False):
+            key = event.key()
+            # Ensure we have an audio player
+            player = getattr(self, 'audio_player', None)
+            editor = getattr(self, 'audio_editor', None)
+            if player is None:
+                return
+            # Seek amounts (ms)
+            NORMAL_SEEK_MS = 1000
+            if key == Qt.Key.Key_F:
+                # Seek forward
+                try:
+                    player.setPosition(max(0, int(player.position()) + NORMAL_SEEK_MS))
+                except Exception:
+                    pass
+                return
+            if key == Qt.Key.Key_D:
+                # Seek backward
+                try:
+                    player.setPosition(max(0, int(player.position()) - NORMAL_SEEK_MS))
+                except Exception:
+                    pass
+                return
+            if key == Qt.Key.Key_A:
+                # Set start trim to current
+                if editor is not None:
+                    try:
+                        cur = int(player.position())
+                        s, e = editor.get_trim_points()
+                        editor.set_trim_points(cur, e)
+                        self.update_status(f"Start set: {cur} ms")
+                    except Exception:
+                        pass
+                return
+            if key == Qt.Key.Key_S:
+                # Set end trim to current
+                if editor is not None:
+                    try:
+                        cur = int(player.position())
+                        s, e = editor.get_trim_points()
+                        editor.set_trim_points(s, cur)
+                        self.update_status(f"End set: {cur} ms")
+                    except Exception:
+                        pass
+                return
+            if key == Qt.Key.Key_B:
+                # Export current selection
+                try:
+                    self.export_current_audio_clip()
+                except Exception:
+                    pass
+                return
+            # In Audio Mode, ignore other keys so video shortcuts don't trigger
+            return
+    except Exception:
+        pass
+
     if getattr(self, 'multi_mode', False) and getattr(self, 'multi_video_widgets', None):
         key = event.key()
         modifiers = event.modifiers()
@@ -2124,10 +2561,13 @@ def multi_mode_keyPressEvent(self, event):
                     num_videos = len(self.multi_video_widgets)
                     if num_videos <= 2:
                         initial_width = 1200
-                        initial_height = 600
+                        initial_height = 800
+                    elif num_videos <= 3:
+                        initial_width = 1200
+                        initial_height = 650
                     elif num_videos <= 4:
                         initial_width = 1200
-                        initial_height = 800
+                        initial_height = 700
                     elif num_videos <= 6:
                         initial_width = 1400
                         initial_height = 900

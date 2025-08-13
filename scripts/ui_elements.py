@@ -10,12 +10,16 @@ from PyQt6.QtGui import QPixmap, QPainter, QIcon, QImage
 from PyQt6.QtCore import Qt, QTimer, QSize
 from scripts.custom_graphics_view import CustomGraphicsView
 from scripts.custom_graphics_scene import CustomGraphicsScene
+from scripts.audio_editor import AudioEditor
 
 
 def initUI(self):
     print("initUI called")  # DEBUG
 
     main_layout = QHBoxLayout(self)
+    # App mode: 'video' or 'audio'
+    if not hasattr(self, 'audio_mode'):
+        self.audio_mode = False
     
     # LEFT PANEL
     left_panel = QVBoxLayout()
@@ -25,9 +29,26 @@ def initUI(self):
     self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     self.icon_label.setCursor(Qt.CursorShape.PointingHandCursor)
     left_panel.addWidget(self.icon_label)
-    # Make icon clickable for theme cycling
+    # Make icon clickable to toggle Audio/Video mode for now
     def icon_click_event(event):
-        self.cycle_theme()
+        try:
+            self.audio_mode = not self.audio_mode
+            # Update UI hints
+            self.search_bar.setPlaceholderText("Search audio..." if self.audio_mode else "Search videos...")
+            # Update status and reload folder listing with appropriate extensions
+            self.update_status("Audio Mode" if self.audio_mode else "Video Mode")
+            # Swap main view widgets
+            try:
+                if hasattr(self, 'graphics_view') and self.graphics_view is not None:
+                    self.graphics_view.setVisible(not self.audio_mode)
+                if hasattr(self, 'audio_editor') and self.audio_editor is not None:
+                    self.audio_editor.setVisible(self.audio_mode)
+            except Exception:
+                pass
+            if hasattr(self, 'loader'):
+                self.loader.load_folder_contents()
+        except Exception as e:
+            print(f"Error toggling mode: {e}")
     self.icon_label.mousePressEvent = icon_click_event
     
     self.folder_button = QPushButton("Select Folder")
@@ -72,7 +93,7 @@ def initUI(self):
 
     # Search bar
     self.search_bar = QLineEdit()
-    self.search_bar.setPlaceholderText("Search videos...")
+    self.search_bar.setPlaceholderText("Search audio..." if getattr(self, 'audio_mode', False) else "Search videos...")
     self.search_bar.textChanged.connect(lambda text: self.loader.search_videos(text))
     left_panel.addWidget(self.search_bar)
 
@@ -222,8 +243,8 @@ def initUI(self):
     main_layout.addLayout(left_panel, 1)
 
     # Set size constraints to prevent UI resizing when themes change
-    self.setMinimumSize(1200, 800)  # Minimum window size
-    self.resize(1400, 900)  # Default window size
+    self.setMinimumSize(400, 400)  # Minimum window size
+    self.resize(1400, 800)  # Default window size
     
     # Set fixed heights for key UI elements to prevent resizing
     self.folder_button.setFixedHeight(35)
@@ -324,6 +345,26 @@ def initUI(self):
     # Install event filter so arrow keys work globally
     self.graphics_view.installEventFilter(self)
     right_panel.addWidget(self.graphics_view, 1)
+
+    # Audio editor panel (hidden by default, appears in Audio Mode)
+    try:
+        self.audio_editor = AudioEditor(self)
+    except Exception:
+        self.audio_editor = None
+    if self.audio_editor is not None:
+        self.audio_editor.setVisible(bool(getattr(self, 'audio_mode', False)))
+        right_panel.addWidget(self.audio_editor, 1)
+        # Ensure video view visibility is opposite
+        try:
+            self.graphics_view.setVisible(not getattr(self, 'audio_mode', False))
+        except Exception:
+            pass
+        # Click-to-seek wiring
+        try:
+            if hasattr(self, 'audio_player') and self.audio_player is not None:
+                self.audio_editor.playheadSeekRequested.connect(lambda ms: self.audio_player.setPosition(int(ms)))
+        except Exception:
+            pass
     
     self.thumbnail_label = QWidget(self)
     self.thumbnail_label.setObjectName("thumbnail_label")
@@ -350,6 +391,16 @@ def initUI(self):
     self.audio_button.setCheckable(True)
     self.audio_button.setChecked(False)
     self.audio_button.clicked.connect(self.toggle_audio)
+    # Make the audio button act as a volume rocker via mouse wheel
+    self.audio_button.setToolTip("Audio: click to toggle, wheel to change volume (Shift=fine, Ctrl=coarse)")
+    self.audio_button.setMouseTracking(True)
+    self.audio_button.installEventFilter(self)
+    # Initialize label with current volume if helper exists
+    if hasattr(self, '_update_audio_button_label'):
+        try:
+            self._update_audio_button_label()
+        except Exception:
+            pass
     button_row.addWidget(self.audio_button)
     
     # Export button

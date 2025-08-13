@@ -11,8 +11,44 @@ class VideoEditor:
         from PyQt6.QtCore import QTimer
         self.playback_timer = QTimer()
         self.playback_timer.setSingleShot(False)
+        # Use a more precise timer to reduce jitter at higher FPS
+        try:
+            from PyQt6.QtCore import Qt
+            self.playback_timer.setTimerType(Qt.TimerType.PreciseTimer)
+        except Exception:
+            pass
         self.playback_timer.timeout.connect(self._playback_tick)
         self._playback_mode = None  # 'forward' or 'loop' or None
+        # Track last shown frame index to avoid redundant redraws
+        self._last_shown_frame = -1
+        # Adaptive sync correction tracking
+        self._corrections_in_window = 0
+        self._window_start_ts = 0.0
+        # Cache to avoid heavy scene/layout updates every frame
+        self._last_pixmap_size = None
+
+    def _reset_correction_window(self):
+        self._corrections_in_window = 0
+        self._window_start_ts = 0.0
+
+    def _note_correction(self):
+        """Record a drift correction and auto-switch to video-master if too many."""
+        try:
+            from time import monotonic
+            now = monotonic()
+            window = 2.0  # seconds
+            if self._window_start_ts == 0.0 or (now - self._window_start_ts) > window:
+                self._window_start_ts = now
+                self._corrections_in_window = 1
+            else:
+                self._corrections_in_window += 1
+            # If too many corrections in window, switch to video-master for this clip
+            if self._corrections_in_window >= 6 and getattr(self.main_app, '_audio_master', True):
+                self.main_app._audio_master = False
+                if hasattr(self.main_app, 'update_status'):
+                    self.main_app.update_status('Sync mode: video-master (auto)')
+        except Exception:
+            pass
 
     def _stop_timer(self):
         if self.playback_timer.isActive():
@@ -29,16 +65,46 @@ class VideoEditor:
     def _play_forward_tick(self):
         if not self.main_app.is_playing or not self.main_app.cap:
             self._stop_timer()
+            # Ensure audio pauses when playback stops
+            if hasattr(self.main_app, '_pause_audio'):
+                self.main_app._pause_audio()
             return
+        # If audio is enabled, occasionally correct drift by seeking; otherwise read next frame
+        use_audio_clock = (
+            getattr(self.main_app, 'audio_enabled', False)
+            and getattr(self.main_app, '_audio_master', True)
+            and hasattr(self.main_app, 'audio_player')
+        )
+        if use_audio_clock and getattr(self.main_app, 'video_fps', 0):
+            fps = self.main_app.video_fps if self.main_app.video_fps else 30
+            audio_ms = self.main_app.audio_player.position()
+            target_frame = int(audio_ms * fps / 1000)
+            cur_frame = int(self.main_app.cap.get(cv2.CAP_PROP_POS_FRAMES)) if self.main_app.cap else 0
+            # If target frame hasn't advanced, skip heavy work this tick
+            if target_frame == self._last_shown_frame:
+                return
+            # Only seek if we are significantly behind/ahead (> 6 frames)
+            if abs(target_frame - cur_frame) > 6:
+                if target_frame < 0:
+                    target_frame = 0
+                elif target_frame >= self.main_app.frame_count:
+                    target_frame = self.main_app.frame_count - 1
+                self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+                self._note_correction()
         ret, frame = self.main_app.cap.read()
+        current_pos = int(self.main_app.cap.get(cv2.CAP_PROP_POS_FRAMES)) if self.main_app.cap else 0
         if not ret:
             # Read error: treat as end of video
             next_action = True
         else:
             # Display frame and update slider
             self.display_frame(frame)
-            current_pos = int(self.main_app.cap.get(cv2.CAP_PROP_POS_FRAMES))
             self.main_app.slider.setValue(current_pos)
+            self._last_shown_frame = current_pos
+            # Keep audio in sync with video only when audio is NOT master
+            if not getattr(self.main_app, 'audio_enabled', False):
+                if hasattr(self.main_app, '_sync_audio_position'):
+                    self.main_app._sync_audio_position()
             # Determine if at last frame
             next_action = (current_pos >= self.main_app.frame_count - 1)
         if next_action:
@@ -62,19 +128,52 @@ class VideoEditor:
             start = self.main_app.trim_points.get(self.main_app.current_video, 0)
             trim_length = self.main_app.trim_length
             end = start + trim_length
-            current_frame = int(self.main_app.cap.get(cv2.CAP_PROP_POS_FRAMES))
-            if current_frame < start or current_frame >= end:
-                self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, start)
-                self.main_app.slider.setValue(start)
-                current_frame = start
-            ret, frame = self.main_app.cap.read()
+            # If audio is enabled, keep audio position within loop window
+            if getattr(self.main_app, 'audio_enabled', False) and hasattr(self.main_app, 'audio_player') and getattr(self.main_app, 'video_fps', 0):
+                fps = self.main_app.video_fps if self.main_app.video_fps else 30
+                start_ms = int(start * 1000 / fps)
+                end_ms = int(end * 1000 / fps)
+                pos = self.main_app.audio_player.position()
+                if pos < start_ms or pos >= end_ms:
+                    self.main_app.audio_player.setPosition(start_ms)
+            # Determine the frame to show; only seek when drift is large
+            target = int(self.main_app.cap.get(cv2.CAP_PROP_POS_FRAMES))
+            use_audio_clock = (
+                getattr(self.main_app, 'audio_enabled', False)
+                and getattr(self.main_app, '_audio_master', True)
+                and hasattr(self.main_app, 'audio_player')
+            )
+            if use_audio_clock and getattr(self.main_app, 'video_fps', 0):
+                fps = self.main_app.video_fps if self.main_app.video_fps else 30
+                audio_ms = self.main_app.audio_player.position()
+                audio_frame = int(audio_ms * fps / 1000)
+                # Constrain to loop bounds
+                if audio_frame < start or audio_frame >= end:
+                    audio_frame = start
+                # If target hasn't advanced, skip work this tick
+                if audio_frame == self._last_shown_frame:
+                    return
+                if abs(audio_frame - target) > 6:
+                    target = audio_frame
+                    self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, target)
+                    self._note_correction()
+            grabbed = self.main_app.cap.grab()
+            if grabbed:
+                ret, frame = self.main_app.cap.retrieve()
+            else:
+                ret, frame = False, None
             if ret:
                 self.display_frame(frame)
-                frame_after = int(self.main_app.cap.get(cv2.CAP_PROP_POS_FRAMES))
+                frame_after = target
                 # If after reading we are out of bounds, reset
                 if frame_after < start or frame_after >= end:
                     self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, start)
                     self.main_app.slider.setValue(start)
+                # Sync audio to current frame in loop only when audio is NOT master
+                if not getattr(self.main_app, 'audio_enabled', False):
+                    if hasattr(self.main_app, '_sync_audio_position'):
+                        self.main_app._sync_audio_position()
+                self._last_shown_frame = frame_after
             else:
                 self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, start)
                 self.main_app.slider.setValue(start)
@@ -82,6 +181,24 @@ class VideoEditor:
             self._stop_timer()
 
     def load_video(self, video_entry):
+        # Before opening a new video, release any previous handles to avoid file locks (WinError 32)
+        try:
+            if getattr(self.main_app, 'cap', None) is not None:
+                try:
+                    self.main_app.cap.release()
+                except Exception:
+                    pass
+                self.main_app.cap = None
+            # Detach audio source so OS handle is released
+            if hasattr(self.main_app, 'audio_player'):
+                try:
+                    self.main_app.audio_player.stop()
+                    from PyQt6.QtCore import QUrl
+                    self.main_app.audio_player.setSource(QUrl())
+                except Exception:
+                    pass
+        except Exception:
+            pass
         video_path = video_entry["original_path"]
         self.main_app.cap = cv2.VideoCapture(video_path)
         if not self.main_app.cap.isOpened():
@@ -98,7 +215,8 @@ class VideoEditor:
         self.main_app.video_fps = fps
         # Clamp delay to avoid too slow or too fast playback
         delay = int(1000 / fps)
-        delay = max(15, min(delay, 100))  # min 15ms (max ~66fps), max 100ms (min ~10fps)
+        # Allow smaller intervals for high-FPS clips; keep a sane upper bound
+        delay = max(5, min(delay, 100))  # min 5ms (~200fps), max 100ms (~10fps)
         self.main_app.video_delay = delay
         # Always start at the beginning (frame 0) when loading a video
         self.main_app.trim_points[self.main_app.current_video] = 0
@@ -128,8 +246,18 @@ class VideoEditor:
         if ret:
             self.display_frame(frame)
         else:
-            print("Error: Could not read first frame.")
-
+            # If failed to read first frame, keep UI consistent
+            pass
+        # Set audio source for single-video audio pipeline
+        if hasattr(self.main_app, '_set_audio_source'):
+            self.main_app._set_audio_source(video_path)
+            # Ensure audio is paused initially and positioned at start
+            if hasattr(self.main_app, '_pause_audio'):
+                self.main_app._pause_audio()
+        # Reset last shown frame tracker
+        self._last_shown_frame = -1
+        # Reset correction tracking and prefer audio-master initially
+        self._reset_correction_window()
         # Check if there is a crop region saved for this video.
         crop = self.main_app.crop_regions.get(self.main_app.current_video)
         if crop:
@@ -174,16 +302,20 @@ class VideoEditor:
         bytes_per_line = ch * w
         q_img = QImage(frame.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
         pixmap = QPixmap.fromImage(q_img)
+        # Scale to current view size, prefer speed to minimize stutter
+        target_w = max(1, self.main_app.graphics_view.width() - 20)
+        target_h = max(1, self.main_app.graphics_view.height() - 20)
         scaled_pixmap = pixmap.scaled(
-            self.main_app.graphics_view.width() - 20,
-            self.main_app.graphics_view.height() - 20,
+            target_w,
+            target_h,
             Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
+            Qt.TransformationMode.FastTransformation
         )
         self.main_app.pixmap_item.setPixmap(scaled_pixmap)
-        self.main_app.graphics_view.fitInView(self.main_app.pixmap_item, Qt.AspectRatioMode.KeepAspectRatio)
-        # Set the scene boundaries to match the pixmap's bounding rectangle.
-        self.main_app.scene.setSceneRect(self.main_app.pixmap_item.boundingRect())
+        # Only update scene rect (and avoid fitInView) when size changes to reduce layout work
+        if self._last_pixmap_size != scaled_pixmap.size():
+            self.main_app.scene.setSceneRect(self.main_app.pixmap_item.boundingRect())
+            self._last_pixmap_size = scaled_pixmap.size()
         # --- Update slider to match current frame ---
         if self.main_app.cap:
             current_frame = int(self.main_app.cap.get(cv2.CAP_PROP_POS_FRAMES))
@@ -211,6 +343,9 @@ class VideoEditor:
             ret, frame = self.main_app.cap.read()
             if ret:
                 self.display_frame(frame)
+                # Sync audio to current frame
+                if hasattr(self.main_app, '_sync_audio_position'):
+                    self.main_app._sync_audio_position()
 
     def update_trim_label(self):
         val = self.main_app.slider.value()
@@ -280,6 +415,9 @@ class VideoEditor:
         ret, frame = self.main_app.cap.read()
         if ret:
             self.display_frame(frame)
+            # Sync audio to current frame
+            if hasattr(self.main_app, '_sync_audio_position'):
+                self.main_app._sync_audio_position()
 
     def show_thumbnail(self, event):
         if not self.main_app.cap:
@@ -336,6 +474,8 @@ class VideoEditor:
         # Update button text based on state
         self.main_app.play_pause_button.setText("Pause" if self.main_app.is_playing else "Play")
         if self.main_app.is_playing:
+            # Starting playback: clear last-shown marker
+            self._last_shown_frame = -1
             # If in Highlight Loop mode, ensure current frame is within loop
             if getattr(self.main_app, 'loop_playback', False):
                 start = self.main_app.trim_points.get(self.main_app.current_video, 0)
@@ -347,6 +487,9 @@ class VideoEditor:
                         self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, start)
                     self.main_app.slider.setValue(start)
             self.play_forward()
+            # Start audio if needed
+            if hasattr(self.main_app, '_play_audio_if_needed'):
+                self.main_app._play_audio_if_needed()
         else:
             self.stop_playback()
 
@@ -389,21 +532,27 @@ class VideoEditor:
                     return
         play_loop()
 
-
-
     def play_forward(self):
         # Stop any existing playback timer
         self._stop_timer()
         if self.main_app.is_playing and self.main_app.cap:
             self._playback_mode = 'forward'
             self.playback_timer.start(self.main_app.video_delay)
-
+            # Ensure audio starts if enabled
+            if hasattr(self.main_app, '_play_audio_if_needed'):
+                self.main_app._play_audio_if_needed()
 
     def stop_playback(self):
         self._stop_timer()
         self.main_app.is_playing = False
         self.main_app.loop_playback = False
         # Do not seek to trim point or any frame when pausing; just stop playback.
+        # Pause audio as well
+        if hasattr(self.main_app, '_pause_audio'):
+            self.main_app._pause_audio()
+        # Reset last shown frame tracker
+        self._last_shown_frame = -1
+        self._reset_correction_window()
 
     def next_clip(self):
         # Stop playback before switching video
