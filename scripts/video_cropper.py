@@ -890,8 +890,8 @@ class VideoCropper(QWidget):
         self.export_in_progress = False  # Instance-level flag
 
         # Initialize favorite folder settings (fixed)
-        self.favorite_folder = r"C:\Users\point\Github\ComfyUI\output\!BEST\Video\4"
-        #self.favorite_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
+        #self.favorite_folder = r"C:\Users\"
+        self.favorite_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
         self.last_non_favorite_folder = ""
         self.favorite_active = False
 
