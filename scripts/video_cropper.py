@@ -354,13 +354,16 @@ class VideoCropper(QWidget):
             
             self.update_status(f"Downloading YouTube video: {url}")
             
-            # Set up yt-dlp options
+            # Set up yt-dlp options - avoid AV1 codec
             ydl_opts = {
-                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+                'format': 'bestvideo[ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/best[ext=mp4][vcodec^=avc1]/best[ext=mp4]',
                 'outtmpl': os.path.join(tempfile.gettempdir(), '%(title)s.%(ext)s'),
                 'quiet': False,
                 'no_warnings': True,
                 'progress_hooks': [self._youtube_download_progress_hook],
+                # Additional options to ensure compatibility
+                'format_sort': ['vcodec:h264', 'acodec:aac', 'ext:mp4'],
+                'merge_output_format': 'mp4',
             }
             
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
