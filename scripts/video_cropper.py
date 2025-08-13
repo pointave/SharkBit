@@ -326,7 +326,7 @@ class VideoCropper(QWidget):
     def open_yt_folder(self):
         import os
         #yt_folder = r"----CUSTOM PATH HERE----"
-        yt_folder = os.path.join(os.environ["USERPROFILE"], "Videos", "youtube")
+        yt_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
         if not os.path.exists(yt_folder):
             QMessageBox.critical(self, "YT Folder Not Found", f"{yt_folder} does not exist.")
             return
@@ -344,6 +344,61 @@ class VideoCropper(QWidget):
         import threading
         self.youtube_url_input.setEnabled(False)
         threading.Thread(target=self._youtube_download_worker, args=(url,), daemon=True).start()
+        
+    def _youtube_download_worker(self, url):
+        """Worker function to handle YouTube downloads in a background thread."""
+        try:
+            import yt_dlp
+            import tempfile
+            import os
+            
+            self.update_status(f"Downloading YouTube video: {url}")
+            
+            # Set up yt-dlp options
+            ydl_opts = {
+                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+                'outtmpl': os.path.join(tempfile.gettempdir(), '%(title)s.%(ext)s'),
+                'quiet': False,
+                'no_warnings': True,
+                'progress_hooks': [self._youtube_download_progress_hook],
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                # Get video info first to show title
+                info = ydl.extract_info(url, download=False)
+                video_title = info.get('title', 'video')
+                self.update_status(f"Downloading: {video_title}")
+                
+                # Start the download
+                ydl.download([url])
+                
+                # Get the downloaded file path
+                filename = ydl.prepare_filename(info)
+                
+                # Move the file to the current folder
+                if os.path.exists(filename):
+                    import shutil
+                    dest_path = os.path.join(self.folder_path, os.path.basename(filename))
+                    shutil.move(filename, dest_path)
+                    self.update_status(f"Download complete: {os.path.basename(dest_path)}")
+                    # Refresh the file list
+                    self.loader.load_folder_contents()
+                
+        except Exception as e:
+            self.update_status(f"Error downloading video: {str(e)}")
+            QMessageBox.critical(self, "Download Error", f"Failed to download video: {str(e)}")
+        finally:
+            # Re-enable the input field
+            self.youtube_url_input.setEnabled(True)
+    
+    def _youtube_download_progress_hook(self, d):
+        """Progress hook for YouTube downloads."""
+        if d['status'] == 'downloading':
+            percent = d.get('_percent_str', '0%')
+            speed = d.get('_speed_str', 'N/A')
+            self.update_status(f"Downloading: {percent} at {speed}")
+        elif d['status'] == 'finished':
+            self.update_status("Processing video...")
 
     def toggle_audio(self):
         """Toggle audio on/off"""
@@ -505,8 +560,8 @@ class VideoCropper(QWidget):
         self.export_in_progress = False  # Instance-level flag
 
         # Initialize favorite folder settings (fixed)
-        self.favorite_folder = r"--PUT YOUR PATH HERE__"
-        #self.favorite_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
+        #self.favorite_folder = r"--PUT YOUR PATH HERE__"
+        self.favorite_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
         self.last_non_favorite_folder = ""
         self.favorite_active = False
 
