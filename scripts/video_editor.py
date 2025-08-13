@@ -585,6 +585,9 @@ class VideoEditor:
         if self.main_app.cap:
             # Set to new_val, grab/retrieve frame, and always set slider to new_val
             self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, new_val)
+            # Sync audio position to match video position
+            if hasattr(self.main_app, '_sync_audio_position'):
+                self.main_app._sync_audio_position()
             grabbed = self.main_app.cap.grab()
             if grabbed:
                 ret, frame = self.main_app.cap.retrieve()

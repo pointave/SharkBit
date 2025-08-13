@@ -468,6 +468,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                 if self.loop_playback:
                     self.editor._stop_timer()
                     self.editor._playback_mode = 'loop'
@@ -488,6 +491,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                 if self.loop_playback:
                     self.editor._stop_timer()
                     self.editor._playback_mode = 'loop'
@@ -513,6 +519,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                 if self.loop_playback:
                     self.editor._stop_timer()
                     self.editor._playback_mode = 'loop'
@@ -533,6 +542,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                 if self.loop_playback:
                     self.editor._stop_timer()
                     self.editor._playback_mode = 'loop'
@@ -551,6 +563,9 @@ def keyPressEvent(self, event):
                     self.slider.setValue(new_start)
                     if self.cap:
                         self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                        # Sync audio position to match video position
+                        if hasattr(self, '_sync_audio_position'):
+                            self._sync_audio_position()
                         # Immediately display the new start frame
                         ret, frame = self.cap.read()
                         if ret:
@@ -578,6 +593,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                 if self.loop_playback:
                     self.editor._stop_timer()
                     self.editor._playback_mode = 'loop'
@@ -598,6 +616,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                 if self.loop_playback:
                     self.editor._stop_timer()
                     self.editor._playback_mode = 'loop'
@@ -656,6 +677,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                     ret, frame = self.cap.read()
                     if ret:
                         self.editor.display_frame(frame)
@@ -673,6 +697,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                     ret, frame = self.cap.read()
                     if ret:
                         self.editor.display_frame(frame)
@@ -689,6 +716,9 @@ def keyPressEvent(self, event):
                 self.slider.setValue(new_start)
                 if self.cap:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, new_start)
+                    # Sync audio position to match video position
+                    if hasattr(self, '_sync_audio_position'):
+                        self._sync_audio_position()
                     ret, frame = self.cap.read()
                     if ret:
                         self.editor.display_frame(frame)

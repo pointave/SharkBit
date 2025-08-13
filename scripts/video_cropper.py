@@ -2385,6 +2385,9 @@ class VideoCropper(QWidget):
             frame_pos = self.current_scenes[scene_index]
             if hasattr(self, 'cap') and self.cap is not None:
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_pos)
+                # Sync audio position to match video position
+                if hasattr(self, '_sync_audio_position'):
+                    self._sync_audio_position()
                 ret, frame = self.cap.read()
                 if ret:
                     self.editor.display_frame(frame)
