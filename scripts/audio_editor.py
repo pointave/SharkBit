@@ -60,11 +60,12 @@ class AudioEditor(QWidget):
         # Fast interactive plot
         pg.setConfigOptions(antialias=True)
         self.plot_widget = pg.PlotWidget()
-        self.plot_widget.setBackground('k')
-        self.plot_widget.showGrid(x=False, y=True, alpha=0.2)
-        self.plot_widget.setMouseEnabled(x=True, y=False)
+        self.plot_widget.setBackground(None)  # Use stylesheet background
         self.plot_item = self.plot_widget.getPlotItem()
-        self.curve = self.plot_item.plot(pen=pg.mkPen('#55C3FF', width=1))
+        self.plot_item.hideAxis('left')  # Hide Y axis for cleaner look
+        self.plot_item.hideAxis('bottom')  # Hide X axis for cleaner look
+        self.plot_item.setMouseEnabled(x=True, y=False)
+        self.curve = self.plot_item.plot(pen=pg.mkPen('#0078d7', width=1))  # Brighter blue for visibility
 
         # Markers
         self.start_line = pg.InfiniteLine(angle=90, movable=True, pen=pg.mkPen('#00FF88', width=2))
@@ -96,21 +97,32 @@ class AudioEditor(QWidget):
         self._samples, self._sr, self._duration_ms = self._load_samples(path)
         if self._samples is None or self.plot_widget is None:
             return
-        # Downsample for speed if very long
+        # Prepare waveform data
         x = self._samples
-        max_points = 5000
-        if x.shape[0] > max_points:
-            # block reduce by max/abs for envelope
-            factor = int(np.ceil(x.shape[0] / max_points))
-            pad = (-x.shape[0]) % factor
-            if pad:
-                x = np.pad(x, (0, pad), mode='constant')
-            x = x.reshape(-1, factor)
-            x = x.mean(axis=1)
-        self.curve.setData(x)
-        self.plot_item.enableAutoRange(axis=pg.ViewBox.XYAxes, enable=True)
+        if x is None or len(x) == 0:
+            return
+            
+        # Create x-axis values (time in samples)
+        x_vals = np.linspace(0, len(x) - 1, len(x))
+        
+        # Downsample for performance if needed (keep at least 1 point per pixel)
+        max_points = 2000  # Reduced from 5000 for better performance
+        if len(x) > max_points:
+            # Simple decimation for large files
+            step = max(1, len(x) // max_points)
+            x = x[::step]
+            x_vals = x_vals[::step]
+        
+        # Update the plot
+        self.curve.setData(x_vals, x)
+        
+        # Set view to show full waveform
+        self.plot_item.autoRange()
+        
+        # Initialize playhead and markers
         self.playhead_line.setValue(0)
         self.playhead_line.show()
+        
         # Default trim to full length
         self._start_ms, self._end_ms = 0, self._duration_ms
         self._update_marker_positions()
@@ -175,12 +187,17 @@ class AudioEditor(QWidget):
         ratio = max(0.0, min(1.0, float(idx) / float(total)))
         return int(ratio * self._duration_ms)
 
-    def _on_plot_clicked(self, event):
-        if self.plot_widget is None or self._duration_ms == 0:
+    def _on_plot_clicked(self, ev):
+        if self.plot_item is None or self._duration_ms <= 0 or self._samples is None:
             return
-        pos = self.plot_widget.plotItem.vb.mapSceneToView(event.scenePos())
-        ms = int(pos.x() * 1000)
-        self.playheadSeekRequested.emit(ms)
+        try:
+            vb = self.plot_item.getViewBox()
+            mouse_point = vb.mapSceneToView(ev.scenePos())
+            idx = int(max(0, min(self._samples.shape[0] - 1, mouse_point.x())))
+            ms = self._sample_index_to_ms(idx)
+            self.playheadSeekRequested.emit(int(ms))
+        except Exception:
+            pass
 
     def keyPressEvent(self, event):
         # Handle mute toggle with CAPSLOCK or ] key
