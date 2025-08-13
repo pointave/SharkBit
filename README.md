@@ -1,7 +1,6 @@
 # SharkBit
 
-SharkBit is a desktop application for video cropping, editing, and exporting, with advanced features like scene detection and multi-video playback. It provides a modern graphical user interface (GUI) and leverages OpenCV, ffmpeg, and other libraries for fast video processing.  ***EXPORT with shortcut B needs to have you push any number key first before it will export.*** 
-
+SharkBit is a desktop application for video cropping, editing, and exporting, with advanced features like scene detection and multi-video playback. Streamlined dataset generation by making all the shortcuts on one hand. This project will continue to evolve.
 ---
 
 ## 🔑 Shortcuts
@@ -24,7 +23,9 @@ SharkBit is a desktop application for video cropping, editing, and exporting, wi
 | `B`         | Save clip (cropped or uncropped)                            |
 | `I`         | Show info (if you use show_text comfynode you'll get prompt)|
 | `/`         | Search                                                      |
+| `\`         | Refresh                                                     |
 | `Backspace` | Minimize                                                    |
+| `Random`     | Ctrl+shft+c copies file path, Ctrl+z will undo deletetion  |
 
 > **Tip:** To have more videos playing at once, **Ctrl+click** on two or more videos in the file list.
 
@@ -37,12 +38,13 @@ git clone https://github.com/pointave/SharkBit
 cd sharkbit
 conda create -n sharkbit python=3.12 -y
 conda activate sharkbit
+OPTIONAL pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 pip install -r requirements.txt
 ```
 
 > **Optional:** Add `yt-dlp.exe` to the `sharkbit` folder to enable YouTube downloads.
-> ALSO if you want you can install pytorch in the environment it will speed up exports.
-
+> ALSO if you want you can install pytorch in the environment it will speed up exports and give you monitorning VRAM and gpu usage.
+> Update with git pull in sharkbit directory
 ---
 
 ## Features
