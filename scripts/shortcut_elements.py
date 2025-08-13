@@ -45,6 +45,20 @@ def keyPressEvent(self, event):
                 self.update_status("Undo: Restored last deleted video")
             return
             
+        # --- Toggle mute with CAPSLOCK or ] key ---
+        elif event.key() in [Qt.Key.Key_CapsLock, Qt.Key.Key_BracketRight] and not event.isAutoRepeat():
+            if hasattr(self, 'audio_output'):
+                current_volume = self.audio_output.volume()
+                if current_volume > 0:
+                    self.audio_output.setMuted(not self.audio_output.isMuted())
+                    self.update_status(f"Audio {'muted' if self.audio_output.isMuted() else 'unmuted'}")
+                else:
+                    # If volume is 0, unmute and set to 50%
+                    self.audio_output.setVolume(0.5)
+                    self.audio_output.setMuted(False)
+                    self.update_status("Audio unmuted (50% volume)")
+            return
+            
         # --- Copy filepath with Ctrl+Shift+C ---
         elif event.key() == Qt.Key.Key_C and event.modifiers() == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
             if hasattr(self, 'video_list') and hasattr(self, 'video_files'):

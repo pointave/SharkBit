@@ -32,11 +32,14 @@ def initUI(self):
     # Make icon clickable to toggle Audio/Video mode for now
     def icon_click_event(event):
         try:
-            self.audio_mode = not self.audio_mode
+            was_audio_mode = getattr(self, 'audio_mode', False)
+            self.audio_mode = not was_audio_mode
+            
             # Update UI hints
             self.search_bar.setPlaceholderText("Search audio..." if self.audio_mode else "Search videos...")
             # Update status and reload folder listing with appropriate extensions
             self.update_status("Audio Mode" if self.audio_mode else "Video Mode")
+            
             # Swap main view widgets
             try:
                 if hasattr(self, 'graphics_view') and self.graphics_view is not None:
@@ -45,6 +48,14 @@ def initUI(self):
                     self.audio_editor.setVisible(self.audio_mode)
             except Exception:
                 pass
+                
+            # Auto-unmute when switching to audio tab
+            if self.audio_mode and hasattr(self, 'audio_output'):
+                if self.audio_output.isMuted() or self.audio_output.volume() == 0:
+                    self.audio_output.setVolume(0.5)
+                    self.audio_output.setMuted(False)
+                    self.update_status("Audio unmuted (50% volume)")
+                    
             if hasattr(self, 'loader'):
                 self.loader.load_folder_contents()
         except Exception as e:

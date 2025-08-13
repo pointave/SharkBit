@@ -339,13 +339,23 @@ class VideoEditor:
             self.main_app.trim_points[self.main_app.current_video] = int(position)
             self.main_app.trim_modified = True
             self.update_trim_label()
+            # Pause audio while scrubbing to prevent audio from continuing to play
+            was_playing = self.main_app.is_playing
+            if was_playing and hasattr(self.main_app, 'audio_player'):
+                self.main_app.audio_player.pause()
+                
+            # Set video frame position
             self.main_app.cap.set(cv2.CAP_PROP_POS_FRAMES, int(position))
             ret, frame = self.main_app.cap.read()
             if ret:
                 self.display_frame(frame)
-                # Sync audio to current frame
-                if hasattr(self.main_app, '_sync_audio_position'):
-                    self.main_app._sync_audio_position()
+                # Force audio to exact position of current frame
+                if hasattr(self.main_app, '_force_audio_position_to_video'):
+                    self.main_app._force_audio_position_to_video()
+                    
+            # Resume audio if it was playing
+            if was_playing and hasattr(self.main_app, 'audio_player'):
+                self.main_app.audio_player.play()
 
     def update_trim_label(self):
         val = self.main_app.slider.value()

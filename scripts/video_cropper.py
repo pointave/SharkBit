@@ -2457,6 +2457,77 @@ def multi_mode_keyPressEvent(self, event):
                 except Exception:
                     pass
                 return
+                
+            # Handle play/pause with V or Enter
+            if key in (Qt.Key.Key_V, Qt.Key.Key_Return, Qt.Key.Key_Enter):
+                try:
+                    if player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+                        player.pause()
+                    else:
+                        player.play()
+                except Exception:
+                    pass
+                return
+                
+            # Handle mute/unmute with CAPSLOCK or ]
+            if key in (Qt.Key.Key_CapsLock, Qt.Key.Key_BracketRight) and not event.isAutoRepeat():
+                if hasattr(self, 'audio_output'):
+                    current_volume = self.audio_output.volume()
+                    if current_volume > 0:
+                        is_muted = not self.audio_output.isMuted()
+                        self.audio_output.setMuted(is_muted)
+                        self.update_status(f"Audio {'muted' if is_muted else 'unmuted'}")
+                    else:
+                        # If volume is 0, unmute and set to 50%
+                        self.audio_output.setVolume(0.5)
+                        self.audio_output.setMuted(False)
+                        self.update_status("Audio unmuted (50% volume)")
+                return
+                
+            # Handle track navigation with R/E or Up/Down arrows
+            if key in (Qt.Key.Key_R, Qt.Key.Key_Down):
+                # Next track
+                try:
+                    current_idx = self.video_list.currentRow()
+                    if current_idx < self.video_list.count() - 1:
+                        self.video_list.setCurrentRow(current_idx + 1)
+                        next_item = self.video_list.currentItem()
+                        if next_item:
+                            self.video_list.itemClicked.emit(next_item)
+                            if player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+                                player.play()
+                except Exception as e:
+                    print(f"Error going to next track: {e}")
+                return
+                
+            if key in (Qt.Key.Key_E, Qt.Key.Key_Up):
+                # Previous track
+                try:
+                    current_idx = self.video_list.currentRow()
+                    if current_idx > 0:
+                        self.video_list.setCurrentRow(current_idx - 1)
+                        prev_item = self.video_list.currentItem()
+                        if prev_item:
+                            self.video_list.itemClicked.emit(prev_item)
+                            if player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+                                player.play()
+                except Exception as e:
+                    print(f"Error going to previous track: {e}")
+                return
+                
+            # Handle theme switching with T key
+            if key == Qt.Key.Key_T:
+                try:
+                    self.cycle_theme()
+                except Exception as e:
+                    print(f"Error cycling theme: {e}")
+                return
+                
+            # Handle quit with Q key
+            if key == Qt.Key.Key_Q and modifiers == Qt.KeyboardModifier.NoModifier:
+                self.close()
+                return
+                
             # In Audio Mode, ignore other keys so video shortcuts don't trigger
             return
     except Exception:

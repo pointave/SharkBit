@@ -39,6 +39,9 @@ class AudioEditor(QWidget):
         self._samples: Optional["np.ndarray"] = None  # mono float32 [-1,1]
         self._start_ms: Optional[int] = None
         self._end_ms: Optional[int] = None
+        
+        # Enable key events
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -172,17 +175,33 @@ class AudioEditor(QWidget):
         ratio = max(0.0, min(1.0, float(idx) / float(total)))
         return int(ratio * self._duration_ms)
 
-    def _on_plot_clicked(self, ev):
-        if self.plot_item is None or self._duration_ms <= 0 or self._samples is None:
+    def _on_plot_clicked(self, event):
+        if self.plot_widget is None or self._duration_ms == 0:
             return
-        try:
-            vb = self.plot_item.getViewBox()
-            mouse_point = vb.mapSceneToView(ev.scenePos())
-            idx = int(max(0, min(self._samples.shape[0] - 1, mouse_point.x())))
-            ms = self._sample_index_to_ms(idx)
-            self.playheadSeekRequested.emit(int(ms))
-        except Exception:
-            pass
+        pos = self.plot_widget.plotItem.vb.mapSceneToView(event.scenePos())
+        ms = int(pos.x() * 1000)
+        self.playheadSeekRequested.emit(ms)
+
+    def keyPressEvent(self, event):
+        # Handle mute toggle with CAPSLOCK or ] key
+        if event.key() in [Qt.Key.Key_CapsLock, Qt.Key.Key_BracketRight] and not event.isAutoRepeat():
+            if hasattr(self.parent(), 'audio_output'):
+                audio_output = self.parent().audio_output
+                current_volume = audio_output.volume()
+                if current_volume > 0:
+                    is_muted = not audio_output.isMuted()
+                    audio_output.setMuted(is_muted)
+                    if hasattr(self.parent(), 'update_status'):
+                        self.parent().update_status(f"Audio {'muted' if is_muted else 'unmuted'}")
+                else:
+                    # If volume is 0, unmute and set to 50%
+                    audio_output.setVolume(0.5)
+                    audio_output.setMuted(False)
+                    if hasattr(self.parent(), 'update_status'):
+                        self.parent().update_status("Audio unmuted (50% volume)")
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
     def _load_samples(self, path: str):
         """Return (mono_samples_float32, sr, duration_ms). Best effort without hard deps.
