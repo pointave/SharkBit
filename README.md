@@ -2,7 +2,7 @@
 
 SharkBit is a desktop application for video cropping, editing, and exporting, with advanced features like scene detection and multi-video playback. Streamlined dataset generation by making all the shortcuts on one hand. This project will continue to evolve. Updated to now have audio trimming like Audacity. I will repair code soon currently next track button doesnt work and pause is accomplished by pushing the Audio Button. I'll have separate memory for audio amd video so you can switch much faster.
 
-I'm sorry I lost the most perfect version of this app, I'll try to rebuild what once was. 
+I'm sorry I lost the most perfect version of this app, I'll try to rebuild what once was. (Did not know what rebasing was, and now taking the route of just cloning new repo and pasting changed files in that...) 
 
 ## 🔑 Shortcuts
 
