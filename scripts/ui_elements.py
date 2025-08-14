@@ -607,20 +607,53 @@ def toggle_fullscreen(self):
             self._is_fullscreen = True
 
 def toggle_favorite_folder(self):
-    # New method for toggling favorite folder
+    """Toggle between favorite and non-favorite folders using FolderManager"""
+    if not hasattr(self, 'folder_manager'):
+        print("Error: FolderManager not initialized")
+        return
+    
+    # Initialize last_non_favorite_folders if it doesn't exist
+    if not hasattr(self, 'last_non_favorite_folders'):
+        self.last_non_favorite_folders = {'audio': None, 'video': None}
+    
+    current_mode = 'audio' if self.audio_mode else 'video'
+    
     if not self.favorite_active:
-        self.last_non_favorite_folder = self.folder_path
-        self.folder_path = self.favorite_folder
-        self.favorite_active = True
-        self.favorite_button.setChecked(True)
-        self.favorite_button.setText("★ Favorite Folder (Active)")
-        self.loader.load_folder_contents()
-        self.update_folder_tree(self.folder_path)
-    else:
-        if self.last_non_favorite_folder and os.path.exists(self.last_non_favorite_folder):
-            self.folder_path = self.last_non_favorite_folder
+        # Save current folder as last non-favorite
+        if self.folder_path and os.path.exists(self.folder_path):
+            self.last_non_favorite_folders[current_mode] = self.folder_path
+            # Also add to recent folders for persistence
+            self.folder_manager.add_folder(current_mode, self.folder_path, is_favorite=False)
+        
+        # Switch to default favorite folder for current mode
+        default_folder = (self.folder_manager.default_audio_folder if self.audio_mode 
+                         else self.folder_manager.default_video_folder)
+        
+        if default_folder and os.path.exists(default_folder):
+            self.folder_path = default_folder
+            self.favorite_active = True
+            self.favorite_button.setChecked(True)
+            self.favorite_button.setText("★ Favorite (Active)")
+            self.loader.folder_path = self.folder_path
             self.loader.load_folder_contents()
-            self.update_folder_tree(self.folder_path)
+            if hasattr(self, 'update_folder_tree'):
+                self.update_folder_tree(self.folder_path)
+    else:
+        # Switch back to the last non-favorite folder for this mode
+        target_folder = self.last_non_favorite_folders.get(current_mode)
+        
+        # Fallback to the most recent non-favorite folder if no last folder is set
+        if not target_folder or not os.path.exists(target_folder):
+            recent_folders = self.folder_manager.get_current_folders(self.audio_mode)['recent']
+            target_folder = recent_folders[0] if recent_folders else None
+        
+        if target_folder and os.path.exists(target_folder):
+            self.folder_path = target_folder
+            self.loader.folder_path = self.folder_path
+            self.loader.load_folder_contents()
+            if hasattr(self, 'update_folder_tree'):
+                self.update_folder_tree(self.folder_path)
+        
         self.favorite_active = False
         self.favorite_button.setChecked(False)
         self.favorite_button.setText("★ Favorite Folder")

@@ -27,6 +27,7 @@ from scripts.video_loader import VideoLoader
 from scripts.video_editor import VideoEditor
 from scripts.video_exporter import VideoExporter
 from scripts.scene_detector import SceneDetector
+from scripts.folder_manager import FolderManager
 
 # Import UI methods from ui_elements.py
 from scripts.ui_elements import (
@@ -804,6 +805,10 @@ class VideoCropper(QWidget):
         self.folder_path = ""
         self.video_files = []  # List of video dicts
         self.current_video = None
+        
+        # Initialize FolderManager for managing audio/video folders
+        self.folder_manager = FolderManager(self)
+        self.audio_mode = False  # Track if we're in audio mode
         # Add this new property:
         self.current_video_index = 0
         self.crop_regions = {}  # Dict to store crop region data per video
@@ -831,16 +836,16 @@ class VideoCropper(QWidget):
         self.audio_player = QMediaPlayer(self)
         self.audio_output = QAudioOutput(self)
         self.audio_player.setAudioOutput(self.audio_output)
-        self.audio_output.setMuted(True)
-        # Throttle parameters for audio sync
-        self._last_audio_sync_ts = 0.0  # seconds
+        # Set initial volume to 5% and muted by default
         try:
             # Larger buffer can reduce crackling on some systems
             self.audio_output.setBufferSize(32768)
-            # Default startup volume = 5%
-            self.audio_output.setVolume(0.05)
+            self.audio_output.setVolume(0.05)  # 5% volume
+            self.audio_output.setMuted(True)   # Start muted
         except Exception:
             pass
+        # Throttle parameters for audio sync
+        self._last_audio_sync_ts = 0.0  # seconds
         
         # Trimming properties
         self.trim_length = 113
@@ -889,10 +894,8 @@ class VideoCropper(QWidget):
         self.exporter = VideoExporter(self)
         self.export_in_progress = False  # Instance-level flag
 
-        # Initialize favorite folder settings (fixed)
-        #self.favorite_folder = r"C:\Users\"
-        self.favorite_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
-        self.last_non_favorite_folder = ""
+        # Initialize folder settings using FolderManager
+        # The default folders are set in FolderManager.__init__
         self.favorite_active = False
 
 
@@ -916,9 +919,11 @@ class VideoCropper(QWidget):
 
         # Load previous session.
         self.loader.load_session()
-        # --- Patch: If folder_path is missing or invalid, use favorite_folder ---
+        
+        # Set initial folder path from FolderManager
         if not self.folder_path or not os.path.exists(self.folder_path) or not os.path.isdir(self.folder_path):
-            self.folder_path = self.favorite_folder
+            # Use the appropriate default folder based on audio mode
+            self.folder_path = self.folder_manager.default_audio_folder if self.audio_mode else self.folder_manager.default_video_folder
             self.favorite_active = True
         # Always reset trim_length to default on startup
         self.trim_length = 113
@@ -997,7 +1002,17 @@ class VideoCropper(QWidget):
         """Open the theme selector dialog"""
         from scripts.theme_selector import ThemeSelector
         dialog = ThemeSelector(self)
-        dialog.exec()
+        if dialog.exec():
+            # Update folder path from FolderManager after theme selection
+            if self.audio_mode:
+                self.folder_path = self.folder_manager.default_audio_folder
+            else:
+                self.folder_path = self.folder_manager.default_video_folder
+            # Reload folder contents with the new path
+            self.loader.folder_path = self.folder_path
+            self.loader.load_folder_contents()
+            self.update_folder_tree(self.folder_path)
+            self.update_file_count()
 
 
     
@@ -2478,10 +2493,10 @@ def multi_mode_keyPressEvent(self, event):
                         self.audio_output.setMuted(is_muted)
                         self.update_status(f"Audio {'muted' if is_muted else 'unmuted'}")
                     else:
-                        # If volume is 0, unmute and set to 50%
-                        self.audio_output.setVolume(0.5)
+                        # If volume is 0, unmute and set to 5%
+                        self.audio_output.setVolume(0.05)
                         self.audio_output.setMuted(False)
-                        self.update_status("Audio unmuted (50% volume)")
+                        self.update_status("Audio unmuted (5% volume)")
                 return
                 
             # Handle track navigation with R/E or Up/Down arrows

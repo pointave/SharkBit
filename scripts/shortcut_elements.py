@@ -647,16 +647,49 @@ def keyPressEvent(self, event):
         # Handle number keys and backtick for position jumping
         if key == Qt.Key.Key_QuoteLeft or key == Qt.Key.Key_0:  # Both ` and 0 jump to start
             if self.slider.isEnabled():
+                # Save current volume and mute state before jumping
+                if hasattr(self, 'audio_output'):
+                    was_muted = self.audio_output.isMuted()
+                    current_volume = self.audio_output.volume()
+                    was_audio_enabled = getattr(self, 'audio_enabled', False)
+                
+                # Perform the jump
                 position = 0
                 self.slider.setValue(position)
                 self.editor.scrub_video(position)
+                
+                # Restore audio state
+                if hasattr(self, 'audio_output'):
+                    self.audio_output.setVolume(current_volume)
+                    # Only unmute if audio was enabled before the jump
+                    if not was_audio_enabled:
+                        self.audio_output.setMuted(True)
+                    else:
+                        self.audio_output.setMuted(was_muted)
                 return
+                
         elif Qt.Key.Key_1 <= key <= Qt.Key.Key_9:
             if self.slider.isEnabled():
+                # Save current volume and mute state before jumping
+                if hasattr(self, 'audio_output'):
+                    was_muted = self.audio_output.isMuted()
+                    current_volume = self.audio_output.volume()
+                    was_audio_enabled = getattr(self, 'audio_enabled', False)
+                
+                # Perform the jump
                 percentage = (key - Qt.Key.Key_0) * 10
                 position = int((percentage / 100.0) * self.slider.maximum())
                 self.slider.setValue(position)
                 self.editor.scrub_video(position)
+                
+                # Restore audio state
+                if hasattr(self, 'audio_output'):
+                    self.audio_output.setVolume(current_volume)
+                    # Only unmute if audio was enabled before the jump
+                    if not was_audio_enabled:
+                        self.audio_output.setMuted(True)
+                    else:
+                        self.audio_output.setMuted(was_muted)
                 return
 
         # '/' focuses the search bar unless already focused
