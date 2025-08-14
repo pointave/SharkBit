@@ -82,6 +82,7 @@ Leisure
 ---
 
 DISCLAMER  
+There is a bug when you click on Loop button in audio tab, so dont do that.
 =======
 ## License
 See `LICENSE` for details.
