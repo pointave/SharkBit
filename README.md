@@ -1,6 +1,6 @@
 # SharkBit
 
-SharkBit is a desktop application for video cropping, editing, and exporting, with advanced features like scene detection and multi-video playback. Streamlined dataset generation by making all the shortcuts on one hand. There is a second tab accessible through the Shark Portal. Audio trimming easily with A and S key to set markers and B to export. To view video while editing audio files you need to click on audio file list first. App is not optimized yet but fully functional.
+SharkBit is a desktop application for video cropping, editing, and exporting, with advanced features like scene detection and multi-video playback. Streamlined dataset generation by making all the shortcuts on one hand. There is a second tab accessible through the Shark Portal. Audio trimming easily with A and S key to set markers and B to export. To view video while editing audio files you need to click on audio file list first. App is not optimized yet but fully functional. There is now in Theme Selector another tab to change favorite Audio and Video folder, first you'll click Add to Favorites to select folder on your PC and then will have to push Set as Default. (I'll add youtube folder default soooon)
 
 ## 🔑 Shortcuts
 
@@ -24,7 +24,8 @@ SharkBit is a desktop application for video cropping, editing, and exporting, wi
 | `/`         | Search                                                      |
 | `\`         | Refresh                                                     |
 | `Backspace` | Minimize                                                    |
-| `Random`     | Ctrl+shft+c copies file path, Ctrl+z will undo deletetion  |
+| `Capslock/]'| Mute                                                        |
+| `Random`    | Ctrl+shft+c copies file path, Ctrl+z will undo deletetion   |
 
 > **Tip:** To have more videos playing at once, **Ctrl+click** on two or more videos in the file list.
 
@@ -82,7 +83,8 @@ Leisure
 ---
 
 DISCLAMER  
-There is a bug when you click on Loop button in audio tab, so dont do that.
+
+
 =======
 ## License
 See `LICENSE` for details.
@@ -94,6 +96,6 @@ See `LICENSE` for details.
 - Uses open-source libraries (see requirements.txt)
 
 ---
->>>>>>> 4bfdca0 (Beautify the themes, half-way there)
+
 
 For more details, see the code comments and individual module docstrings.
