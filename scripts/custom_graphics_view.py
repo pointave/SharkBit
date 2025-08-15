@@ -1,33 +1,109 @@
-from PyQt6.QtWidgets import QGraphicsView
-from PyQt6.QtGui import QMouseEvent, QWheelEvent
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QFrame
+from PyQt6.QtGui import QMouseEvent, QWheelEvent, QPainter, QPixmap, QImage
+from PyQt6.QtCore import Qt, QRectF
 import cv2
 
 class CustomGraphicsView(QGraphicsView):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        
+        # Set up the scene
+        self.scene = QGraphicsScene(self)
+        self.setScene(self.scene)
+        
+        # Create a pixmap item for the video frame
+        self.pixmap_item = QGraphicsPixmapItem()
+        self.scene.addItem(self.pixmap_item)
+        
+        # Configure the view for optimal video rendering
+        self.setRenderHints(
+            QPainter.RenderHint.Antialiasing |
+            QPainter.RenderHint.SmoothPixmapTransform |
+            QPainter.RenderHint.TextAntialiasing
+        )
+        
+        # Viewport settings for better performance and quality
+        self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setFrameShape(QFrame.Shape.NoFrame)
+        
+        # Enable mouse tracking
         self.setMouseTracking(True)
+        
+        # Video properties
+        self.aspect_ratio_mode = Qt.AspectRatioMode.KeepAspectRatio
+        self._current_frame = None
 
+    def set_frame(self, frame):
+        """
+        Update the display with a new video frame.
+        
+        Args:
+            frame: A numpy array containing the frame data (BGR format)
+        """
+        if frame is None:
+            return
+            
+        self._current_frame = frame
+        
+        # Convert frame to QImage
+        height, width, channel = frame.shape
+        bytes_per_line = 3 * width
+        q_img = QImage(
+            frame.data, 
+            width, 
+            height, 
+            bytes_per_line, 
+            QImage.Format.Format_BGR888
+        )
+        
+        # Convert to QPixmap and update the display
+        pixmap = QPixmap.fromImage(q_img)
+        self.pixmap_item.setPixmap(pixmap)
+        
+        # Update the scene rect to match the pixmap size
+        self.scene.setSceneRect(QRectF(pixmap.rect()))
+        
+        # Ensure the view is properly scaled
+        self.fitInView(self.scene.sceneRect(), self.aspect_ratio_mode)
+    
+    def resizeEvent(self, event):
+        """Handle window resize events to maintain aspect ratio."""
+        if hasattr(self, 'scene') and self.scene and self.scene.sceneRect().isValid():
+            self.fitInView(self.scene.sceneRect(), self.aspect_ratio_mode)
+        super().resizeEvent(event)
+    
+    def clear(self):
+        """Clear the display."""
+        self.pixmap_item.setPixmap(QPixmap())
+        self._current_frame = None
+    
+    def get_current_frame(self):
+        """Get the current frame as a numpy array."""
+        return self._current_frame
+        
     def mouseMoveEvent(self, event: QMouseEvent):
-        grabbed = self.scene().mouseGrabberItem()
-        if grabbed:
-            # Map the view's mouse position to scene coordinates.
-            scene_pos = self.mapToScene(event.pos())
-            # Then map the scene position to the grabbed item's local coordinates.
-            local_pos = grabbed.mapFromScene(scene_pos)
-            # Create a new fake QMouseEvent with the local coordinates.
-            fake_event = QMouseEvent(
-                event.type(),
-                local_pos,
-                event.globalPosition(),
-                event.button(),
-                event.buttons(),
-                event.modifiers()
-            )
-            grabbed.mouseMoveEvent(fake_event)
-            event.accept()
-        else:
-            super().mouseMoveEvent(event)
+        if hasattr(self, 'scene') and self.scene:
+            grabbed = self.scene.mouseGrabberItem()
+            if grabbed:
+                # Map the view's mouse position to scene coordinates.
+                scene_pos = self.mapToScene(event.pos())
+                # Then map the scene position to the grabbed item's local coordinates.
+                local_pos = grabbed.mapFromScene(scene_pos)
+                # Create a new fake QMouseEvent with the local coordinates.
+                fake_event = QMouseEvent(
+                    event.type(),
+                    local_pos,
+                    event.globalPosition(),
+                    event.button(),
+                    event.buttons(),
+                    event.modifiers()
+                )
+                grabbed.mouseMoveEvent(fake_event)
+                event.accept()
+                return
+        super().mouseMoveEvent(event)
             
     def wheelEvent(self, event: QWheelEvent):
         """Handle mouse wheel events for scene navigation and video seeking"""

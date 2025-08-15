@@ -1,11 +1,18 @@
 import sys
+import os
 import time
 from PyQt6.QtWidgets import QApplication
 from scripts.video_cropper import VideoCropper
 
+# Set high DPI environment variables before creating QApplication
+os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+os.environ["QT_SCALE_FACTOR_ROUNDING_POLICY"] = "PassThrough"
+
+# Create the application
+app = QApplication(sys.argv)
+
 if __name__ == "__main__":
     start = time.time()
-    app = QApplication(sys.argv)
     
     # Load the retro arcade stylesheet from a file
     with open("styles/minimal/pure_dark.css", "r") as file:

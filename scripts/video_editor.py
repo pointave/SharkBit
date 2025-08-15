@@ -290,44 +290,48 @@ class VideoEditor:
             self.main_app.play_pause_button.setText("Play")
 
     def display_frame(self, frame):
-        # Limit visible resolution to 1920x1080 for smoother playback
-        max_w, max_h = 1920, 1080
-        h, w = frame.shape[:2]
-        if w > max_w or h > max_h:
-            scale = min(max_w / w, max_h / h)
-            new_w, new_h = int(w * scale), int(h * scale)
-            frame = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        h, w, ch = frame.shape
+        if frame is None:
+            return
+            
+        # Convert BGR to RGB
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, ch = frame_rgb.shape
         bytes_per_line = ch * w
-        q_img = QImage(frame.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
+        q_img = QImage(frame_rgb.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
+        
+        # Create QPixmap from QImage
         pixmap = QPixmap.fromImage(q_img)
-        # Scale to current view size, prefer speed to minimize stutter
+        
+        # Scale the pixmap to fit the view while maintaining aspect ratio
         target_w = max(1, self.main_app.graphics_view.width() - 20)
         target_h = max(1, self.main_app.graphics_view.height() - 20)
+        
         scaled_pixmap = pixmap.scaled(
             target_w,
             target_h,
             Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.FastTransformation
+            Qt.TransformationMode.SmoothTransformation
         )
-        self.main_app.pixmap_item.setPixmap(scaled_pixmap)
-        # Only update scene rect (and avoid fitInView) when size changes to reduce layout work
-        if self._last_pixmap_size != scaled_pixmap.size():
-            self.main_app.scene.setSceneRect(self.main_app.pixmap_item.boundingRect())
-            self._last_pixmap_size = scaled_pixmap.size()
-        # --- Update slider to match current frame ---
-        if self.main_app.cap:
+        
+        # Update the pixmap item with the scaled pixmap
+        if hasattr(self.main_app, 'pixmap_item'):
+            self.main_app.pixmap_item.setPixmap(scaled_pixmap)
+            
+            # Only update scene rect when size changes to reduce layout work
+            if not hasattr(self, '_last_pixmap_size') or self._last_pixmap_size != scaled_pixmap.size():
+                self.main_app.scene.setSceneRect(self.main_app.pixmap_item.boundingRect())
+                self._last_pixmap_size = scaled_pixmap.size()
+        
+        # Update slider and frame counter
+        if hasattr(self.main_app, 'cap') and self.main_app.cap:
             current_frame = int(self.main_app.cap.get(cv2.CAP_PROP_POS_FRAMES))
+            
             # Avoid feedback loop if user is scrubbing
-            if not self.main_app.slider.isSliderDown():
+            if hasattr(self.main_app, 'slider') and not self.main_app.slider.isSliderDown():
                 self.main_app.slider.setValue(current_frame)
-            # Update trim point indicator to show current frame
+            
+            # Update trim point indicator
             if hasattr(self.main_app, 'trim_point_label'):
-                                # Show both frame and second count
-                fps = getattr(self.main_app, 'video_fps', 30)
-                second = current_frame / fps if fps else 0
-                                # Show frame, second, and percent
                 fps = getattr(self.main_app, 'video_fps', 30)
                 total_frames = getattr(self.main_app, 'frame_count', 1)
                 second = current_frame / fps if fps else 0
