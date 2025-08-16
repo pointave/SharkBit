@@ -57,26 +57,65 @@ class AudioEditor(QWidget):
             self.playhead_line = None
             return
 
-        # Fast interactive plot
-        pg.setConfigOptions(antialias=True)
+        # Professional waveform display with grid and axis
+        pg.setConfigOptions(antialias=True, useNumba=True, useOpenGL=True)
         self.plot_widget = pg.PlotWidget()
-        self.plot_widget.setBackground(None)  # Use stylesheet background
+        self.plot_widget.setBackground('#1e1e1e')  # Dark background like professional DAWs
+        
         self.plot_item = self.plot_widget.getPlotItem()
-        self.plot_item.hideAxis('left')  # Hide Y axis for cleaner look
-        self.plot_item.hideAxis('bottom')  # Hide X axis for cleaner look
         self.plot_item.setMouseEnabled(x=True, y=False)
-        self.curve = self.plot_item.plot(pen=pg.mkPen('#0078d7', width=1))  # Brighter blue for visibility
+        
+        # Configure axes
+        self.plot_item.showAxis('bottom', show=True)
+        self.plot_item.showAxis('left', show=True)
+        self.plot_item.getAxis('bottom').setPen(pg.mkPen('#888888'))
+        self.plot_item.getAxis('left').setPen(pg.mkPen('#888888'))
+        self.plot_item.setLabel('bottom', 'Time', 's')
+        self.plot_item.setLabel('left', 'Amplitude')
+        
+        # Add grid
+        self.plot_item.showGrid(x=True, y=True, alpha=0.2)
+        
+        # Create two curves for positive and negative parts (like Audacity)
+        self.curve_positive = self.plot_item.plot(pen=pg.mkPen('#4e9ef4', width=1.2))  # Light blue for positive
+        self.curve_negative = self.plot_item.plot(pen=pg.mkPen('#4e9ef4', width=1.2))  # Same color for now
+        self.curve_zero = self.plot_item.plot(pen=pg.mkPen('#555555', width=0.5))  # Center line
 
-        # Markers
-        self.start_line = pg.InfiniteLine(angle=90, movable=True, pen=pg.mkPen('#00FF88', width=2))
-        self.end_line = pg.InfiniteLine(angle=90, movable=True, pen=pg.mkPen('#FF3366', width=2))
-        self.playhead_line = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('#FFFF00', width=1))
-        self.plot_item.addItem(self.start_line)
-        self.plot_item.addItem(self.end_line)
-        self.plot_item.addItem(self.playhead_line)
-        self.start_line.hide()
-        self.end_line.hide()
-        self.playhead_line.hide()
+        # Markers with better visibility
+        self.start_line = pg.InfiniteLine(
+            angle=90, 
+            movable=True, 
+            pen=pg.mkPen('#00FF88', width=2),
+            hoverPen=pg.mkPen('#00FF88', width=3),
+            bounds=[0, None]
+        )
+        self.end_line = pg.InfiniteLine(
+            angle=90, 
+            movable=True, 
+            pen=pg.mkPen('#FF3366', width=2),
+            hoverPen=pg.mkPen('#FF3366', width=3),
+            bounds=[0, None]
+        )
+        self.playhead_line = pg.InfiniteLine(
+            angle=90, 
+            movable=False, 
+            pen=pg.mkPen('#FFCC00', width=1.5, style=Qt.PenStyle.DashLine),
+            hoverPen=pg.mkPen('#FFEE00', width=2, style=Qt.PenStyle.DashLine)
+        )
+        
+        # Add markers to plot
+        for line in [self.start_line, self.end_line, self.playhead_line]:
+            self.plot_item.addItem(line)
+            line.hide()
+            
+        # Add zoom/pan controls
+        self.plot_widget.setMenuEnabled(False)
+        self.plot_widget.setDownsampling(auto=True, mode='peak')
+        self.plot_widget.setClipToView(True)
+        self.plot_widget.setLimits(xMin=0, minXRange=0.1)
+        
+        # Context menu for zoom controls
+        self.plot_widget.scene().contextMenu = []  # Remove default context menu
 
         # Marker moved handlers
         self.start_line.sigPositionChanged.connect(self._on_marker_moved)
@@ -95,29 +134,39 @@ class AudioEditor(QWidget):
     def load(self, path: str) -> None:
         self._audio_path = path
         self._samples, self._sr, self._duration_ms = self._load_samples(path)
-        if self._samples is None or self.plot_widget is None:
+        if self._samples is None or self.plot_widget is None or self._sr is None:
             return
-        # Prepare waveform data
+            
         x = self._samples
         if x is None or len(x) == 0:
             return
             
-        # Create x-axis values (time in samples)
-        x_vals = np.linspace(0, len(x) - 1, len(x))
+        # Calculate time points for x-axis
+        duration_sec = self._duration_ms / 1000.0
+        time_points = np.linspace(0, duration_sec, len(x))
         
-        # Downsample for performance if needed (keep at least 1 point per pixel)
-        max_points = 2000  # Reduced from 5000 for better performance
-        if len(x) > max_points:
-            # Simple decimation for large files
-            step = max(1, len(x) // max_points)
-            x = x[::step]
-            x_vals = x_vals[::step]
+        # Create envelope for better visualization (top half only)
+        # Take absolute value to get full waveform in positive space
+        x_abs = np.abs(x)
         
-        # Update the plot
-        self.curve.setData(x_vals, x)
+        # Downsample intelligently for performance
+        target_points = min(5000, len(x))  # Target number of points
+        if len(x) > target_points * 2:
+            # Use peak detection for better downsampling
+            step = len(x) // target_points
+            x_abs = self._downsample_peaks(x_abs, step)
+            time_points = time_points[::step][:len(x_abs)]
         
-        # Set view to show full waveform
-        self.plot_item.autoRange()
+        # Update the plot with new data (only positive half)
+        self.curve_positive.setData(time_points, x_abs, pen=pg.mkPen('#4e9ef4', width=1.2))
+        # Hide the negative curve since we're only showing top half
+        self.curve_negative.setData([], [])  # Empty data to hide
+        # Update zero line to be at the bottom
+        self.curve_zero.setData([0, duration_sec], [0, 0], pen=pg.mkPen('#555555', width=0.5))
+        
+        # Set view to show full waveform with some padding (only positive Y)
+        self.plot_item.setXRange(0, duration_sec, padding=0.02)
+        self.plot_item.setYRange(0, 1.1, padding=0.1)  # Only show positive Y
         
         # Initialize playhead and markers
         self.playhead_line.setValue(0)
@@ -128,14 +177,51 @@ class AudioEditor(QWidget):
         self._update_marker_positions()
         self.start_line.show()
         self.end_line.show()
+        
+        # Update axis labels with time format
+        self.plot_item.getAxis('bottom').setLabel(text='Time', units='s')
+        
+        # Enable auto-range buttons
+        self.plot_item.getViewBox().enableAutoRange(enable=True)
+        
+    def _downsample_peaks(self, x: np.ndarray, step: int) -> np.ndarray:
+        """Downsample using peak detection for better waveform visualization."""
+        n = len(x) // step
+        result = np.zeros(n)
+        for i in range(n):
+            start = i * step
+            end = min((i + 1) * step, len(x))
+            if start >= end:
+                continue
+            # Get min and max in the window
+            window = x[start:end]
+            if np.all(np.isnan(window)):
+                result[i] = 0
+            else:
+                # For positive part, get max; for negative, get min
+                if np.any(window > 0):
+                    result[i] = np.nanmax(window)
+                else:
+                    result[i] = np.nanmin(window)
+        return result
 
     def set_playhead_ms(self, ms: int) -> None:
         if self._duration_ms <= 0 or self.playhead_line is None:
             return
-        # Map ms to sample index domain used in curve (0..len(samples)-1 envelope)
-        x_pos = self._ms_to_sample_index(ms)
+        # Convert ms to seconds for x-axis
+        x_pos = ms / 1000.0
         self.playhead_line.setValue(x_pos)
         self.playhead_line.show()
+        
+        # Auto-scroll to keep playhead visible if needed
+        if self.plot_item and self.plot_item.getViewBox():
+            view = self.plot_item.getViewBox()
+            view_range = view.viewRange()
+            view_width = view_range[0][1] - view_range[0][0]
+            
+            # If playhead is near the right edge, scroll right
+            if x_pos > view_range[0][1] - view_width * 0.2:  # 20% from right edge
+                view.setXRange(x_pos - view_width * 0.8, x_pos + view_width * 0.2, padding=0)
 
     def set_trim_points(self, start_ms: int, end_ms: int) -> None:
         self._start_ms, self._end_ms = max(0, start_ms), max(start_ms, end_ms)
@@ -164,14 +250,33 @@ class AudioEditor(QWidget):
     def _update_marker_positions(self):
         if self._duration_ms <= 0 or self.start_line is None or self.end_line is None:
             return
-        s_idx = self._ms_to_sample_index(self._start_ms or 0)
-        e_idx = self._ms_to_sample_index(self._end_ms or self._duration_ms)
+            
+        # Convert ms to seconds for x-axis
+        s_sec = (self._start_ms or 0) / 1000.0
+        e_sec = (self._end_ms or self._duration_ms) / 1000.0
+        
         self.start_line.blockSignals(True)
         self.end_line.blockSignals(True)
-        self.start_line.setValue(s_idx)
-        self.end_line.setValue(e_idx)
+        
+        # Update marker positions
+        self.start_line.setValue(s_sec)
+        self.end_line.setValue(e_sec)
+        
+        # Update marker bounds to prevent overlap and going out of range
+        self.start_line.setBounds([0, e_sec])
+        self.end_line.setBounds([s_sec, self._duration_ms / 1000.0])
+        
+        # Update marker labels if they exist (position at top of waveform)
+        if hasattr(self, 'start_label'):
+            self.start_label.setPos(s_sec, 1.0)
+        if hasattr(self, 'end_label'):
+            self.end_label.setPos(e_sec, 1.0)
+            
         self.start_line.blockSignals(False)
         self.end_line.blockSignals(False)
+        
+        # Update the highlighted region between markers
+        self._update_highlight_region()
 
     def _ms_to_sample_index(self, ms: int) -> int:
         if self._sr is None or self._duration_ms <= 0 or self._samples is None:
@@ -179,6 +284,45 @@ class AudioEditor(QWidget):
         total_samples = self._samples.shape[0]
         ratio = float(ms) / float(self._duration_ms)
         return int(max(0, min(total_samples - 1, ratio * total_samples)))
+        
+    def _update_highlight_region(self):
+        """No longer using highlight region to avoid interference with dragging."""
+        # Remove highlight region if it exists
+        if hasattr(self, 'highlight_region'):
+            if self.plot_item and hasattr(self.plot_item, 'removeItem'):
+                self.plot_item.removeItem(self.highlight_region)
+            delattr(self, 'highlight_region')
+            
+    def _zoom_to_selection(self):
+        """Zoom to the current selection between markers."""
+        if self._start_ms is not None and self._end_ms is not None:
+            start_sec = self._start_ms / 1000.0
+            end_sec = self._end_ms / 1000.0
+            if end_sec > start_sec:
+                self.plot_item.setXRange(start_sec, end_sec, padding=0.02)
+                
+    def wheelEvent(self, event):
+        """Handle mouse wheel events for zooming."""
+        if not self.plot_widget or not self.plot_item:
+            return
+            
+        # Get the current view range
+        vb = self.plot_item.getViewBox()
+        if not vb:
+            return
+            
+        # Get mouse position in view coordinates
+        pos = self.plot_widget.mapFromGlobal(event.globalPosition().toPoint())
+        pos = self.plot_widget.plotItem.vb.mapSceneToView(pos)
+        
+        # Calculate zoom factor (15% per wheel step)
+        zoom_factor = 1.15 if event.angleDelta().y() > 0 else 1.0 / 1.15
+        
+        # Apply zoom centered on mouse position
+        vb.setRange(xRange=vb.viewRange()[0], padding=0)
+        vb.scaleBy((1/zoom_factor, 1), pos=pos)
+        
+        event.accept()
 
     def _sample_index_to_ms(self, idx: int) -> int:
         if self._samples is None or self._duration_ms <= 0:
@@ -190,14 +334,45 @@ class AudioEditor(QWidget):
     def _on_plot_clicked(self, ev):
         if self.plot_item is None or self._duration_ms <= 0 or self._samples is None:
             return
+            
+        # Only process left mouse button clicks
+        if ev.button() != Qt.MouseButton.LeftButton:
+            return
+            
         try:
             vb = self.plot_item.getViewBox()
+            if not vb:
+                return
+                
+            # Get the click position in the view coordinates
             mouse_point = vb.mapSceneToView(ev.scenePos())
-            idx = int(max(0, min(self._samples.shape[0] - 1, mouse_point.x())))
-            ms = self._sample_index_to_ms(idx)
-            self.playheadSeekRequested.emit(int(ms))
-        except Exception:
-            pass
+            click_sec = max(0, min(self._duration_ms / 1000.0, mouse_point.x()))
+            click_ms = int(click_sec * 1000)
+            
+            # If shift is held, set the nearest marker
+            modifiers = ev.modifiers()
+            if modifiers & Qt.KeyboardModifier.ShiftModifier:
+                # Find which marker is closer to the click
+                start_dist = abs((self._start_ms or 0) - click_ms)
+                end_dist = abs((self._end_ms or self._duration_ms) - click_ms)
+                
+                if start_dist < end_dist:
+                    self._start_ms = click_ms
+                else:
+                    self._end_ms = click_ms
+                self._update_marker_positions()
+                self.trimChanged.emit(int(self._start_ms or 0), int(self._end_ms or self._duration_ms))
+            else:
+                # Normal click - seek to position
+                self.playheadSeekRequested.emit(click_ms)
+                
+            # If double click, zoom to selection
+            if ev.double():
+                self._zoom_to_selection()
+                
+        except Exception as e:
+            import traceback
+            print(f"Error handling plot click: {e}\n{traceback.format_exc()}")
 
     def keyPressEvent(self, event):
         # Handle mute toggle with CAPSLOCK or ] key

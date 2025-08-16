@@ -57,13 +57,12 @@ class ClickableLabel(QLabel):
         super().mousePressEvent(event)
 
 class MultiVideoCell(QWidget):
-    def __init__(self, parent=None, grid_index=None, click_callback=None, loop_enabled=True, auto_advance_enabled=False, next_file_callback=None, drag_drop_callback=None, hover_callback=None, key_event_callback=None):
+    def __init__(self, parent=None, grid_index=None, click_callback=None, loop_enabled=True, auto_advance_enabled=False, next_file_callback=None, drag_drop_callback=None, hover_callback=None):
         super().__init__(parent)
         self.grid_index = grid_index
         self.click_callback = click_callback
         self.drag_drop_callback = drag_drop_callback
         self.hover_callback = hover_callback  # New callback for hover events
-        self.key_event_callback = key_event_callback  # New callback for key events
         self.loop_enabled = loop_enabled
         self.auto_advance_enabled = auto_advance_enabled
         self.next_file_callback = next_file_callback
@@ -118,14 +117,6 @@ class MultiVideoCell(QWidget):
         # Enable hover events explicitly for better responsiveness
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         
-        # Enable focus for keyboard events
-        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.frame.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.video_widget.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        
-        # Track if this cell is focused
-        self._is_focused = False
-        
     def eventFilter(self, obj, event):
         """Event filter to handle drag events on child widgets"""
         if obj in [self.frame, self.video_widget]:
@@ -144,6 +135,14 @@ class MultiVideoCell(QWidget):
         return super().eventFilter(obj, event)
         
     def mousePressEvent(self, event):
+        # Don't process clicks in pop-out view mode
+        parent = self.parent()
+        while parent and not hasattr(parent, '_preview_mode'):
+            parent = parent.parent()
+        if parent and getattr(parent, '_preview_mode', False):
+            event.ignore()
+            return
+            
         if event.button() == Qt.MouseButton.LeftButton:
             self.drag_start_pos = event.pos()
             self.is_dragging = False
@@ -178,25 +177,24 @@ class MultiVideoCell(QWidget):
             self.set_highlighted(False)  # Restore normal styling
 
     def enterEvent(self, event):
-        # Trigger hover selection and set focus
+        # Trigger hover selection immediately on enter to improve fast movements
         if self.hover_callback:
             self.hover_callback(self.grid_index)
-        # Set focus to this cell and ensure it's highlighted
-        self.setFocus()
-        self._is_focused = True
-        self.set_highlighted(True)
         super().enterEvent(event)
             
     def mouseReleaseEvent(self, event):
+        # Don't process clicks in pop-out view mode
+        parent = self.parent()
+        while parent and not hasattr(parent, '_preview_mode'):
+            parent = parent.parent()
+        if parent and getattr(parent, '_preview_mode', False):
+            event.ignore()
+            return
+            
         if event.button() == Qt.MouseButton.LeftButton and not self.is_dragging:
             # This was a click, not a drag
             if self.click_callback:
                 self.click_callback(self.grid_index)
-            # Set focus to this cell
-            self.setFocus()
-            self._is_focused = True
-            # Update visual feedback
-            self.set_highlighted(True)
         self.is_dragging = False
         self.drag_start_pos = None
         super().mouseReleaseEvent(event)
@@ -291,14 +289,9 @@ class MultiVideoCell(QWidget):
     def set_highlighted(self, highlighted):
         """Set visual highlight for this cell"""
         if highlighted:
-            self.frame.setStyleSheet("QFrame { border: 3px solid #007acc; background-color: #444; }")
-            self._is_focused = True
-            # Ensure this cell is the focused one in the parent
-            if hasattr(self, 'grid_index') and hasattr(self.parent(), 'multi_focused_grid'):
-                self.parent().multi_focused_grid = self.grid_index
+            self.frame.setStyleSheet("QFrame { border: 3px solid #007acc; background-color: #333; }")
         else:
             self.frame.setStyleSheet("QFrame { border: 2px solid #666; background-color: #333; }")
-            self._is_focused = False
             
     def show_swap_menu(self, pos):
         """Show context menu for swapping with other videos"""
@@ -339,37 +332,6 @@ class MultiVideoCell(QWidget):
         self.auto_advance_enabled = enabled
     def set_next_file_callback(self, callback):
         self.next_file_callback = callback
-    def keyPressEvent(self, event):
-        """Handle key events and forward them to the parent"""
-        # If this cell is focused, process the key event
-        if self._is_focused and self.key_event_callback:
-            self.key_event_callback(self.grid_index, event)
-            event.accept()
-        else:
-            super().keyPressEvent(event)
-            
-    def event(self, event):
-        # Handle focus events to ensure proper focus handling
-        if event.type() == event.Type.WindowActivate or event.type() == event.Type.FocusIn:
-            self._is_focused = True
-            self.set_highlighted(True)
-        elif event.type() == event.Type.FocusOut:
-            self._is_focused = False
-            self.set_highlighted(False)
-        return super().event(event)
-            
-    def focusInEvent(self, event):
-        """Handle focus in event"""
-        self._is_focused = True
-        self.set_highlighted(True)
-        super().focusInEvent(event)
-        
-    def focusOutEvent(self, event):
-        """Handle focus out event"""
-        self._is_focused = False
-        self.set_highlighted(False)
-        super().focusOutEvent(event)
-        
     def _on_media_status_changed(self, status):
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             if self.loop_enabled:
@@ -1309,9 +1271,6 @@ class VideoCropper(QWidget):
             cell.setToolTip(entry["display_name"])
             self.status_label.setText(f"Grid {grid_idx+1}: {entry['display_name']}")
             self._highlight_multi_videos()
-        def on_multi_video_key_event(index, event):
-            # Forward the key event to the main window's keyPressEvent
-            self.keyPressEvent(event)
         for slot, idx in enumerate(self.multi_selected_indices):
             entry = self.video_files[idx]
             cell = MultiVideoCell(
@@ -1321,8 +1280,7 @@ class VideoCropper(QWidget):
                 loop_enabled=not getattr(self, 'auto_advance_enabled', False),
                 auto_advance_enabled=getattr(self, 'auto_advance_enabled', False),
                 next_file_callback=next_file_for_cell,
-                drag_drop_callback=self._on_video_drag_drop,
-                key_event_callback=on_multi_video_key_event
+                drag_drop_callback=self._on_video_drag_drop
             )
             cell.load(entry["original_path"])
             cell.play()
@@ -1376,11 +1334,7 @@ class VideoCropper(QWidget):
                 if rect.contains(pos):
                     if getattr(self, 'multi_focused_grid', -1) != i:
                         self.multi_focused_grid = i
-                        # Set focus to the hovered cell
-                        cell.setFocus()
                         self._highlight_multi_videos()
-                        # Update the current video index
-                        self.current_video_index = i
                     break
             QWidget.mouseMoveEvent(self.multi_grid_widget, event)
         
