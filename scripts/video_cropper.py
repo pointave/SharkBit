@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QTreeWidget, QTreeWidgetItem, QGridLayout, QFrame, QScrollArea, QTabWidget
 )
 from PyQt6.QtGui import QPixmap, QImage, QPainter, QColor, QPen, QIcon, QMouseEvent, QDrag
-from PyQt6.QtCore import Qt, QTimer, QUrl, QMimeData
+from PyQt6.QtCore import Qt, QTimer, QUrl, QMimeData, QPoint
 from PyQt6.QtGui import QTextOption, QTextCursor
 import shutil
 import datetime
@@ -28,6 +28,7 @@ from scripts.video_editor import VideoEditor
 from scripts.video_exporter import VideoExporter
 from scripts.scene_detector import SceneDetector
 from scripts.folder_manager import FolderManager
+from scripts.drag_drop_helper import DragDropHelper
 
 # Import UI methods from ui_elements.py
 from scripts.ui_elements import (
@@ -892,6 +893,9 @@ class VideoCropper(QWidget):
         # UI widgets
         self.video_list = QListWidget()
         
+        # Setup drag-drop for video list
+        self._setup_video_list_drag_drop()
+        
         # Aspect ratio options (for crop constraint)
         self.aspect_ratios = {
             "Free-form": None,
@@ -1009,6 +1013,75 @@ class VideoCropper(QWidget):
         
         # Initialize metadata dialog
         self.metadata_dialog = None
+
+    def _setup_video_list_drag_drop(self):
+        """Enable dragging videos from the list to external programs"""
+        # Override the mouse move event to handle drag initiation
+        self.video_list.original_mouseMoveEvent = self.video_list.mouseMoveEvent
+        self.video_list.mouseMoveEvent = self._on_video_list_mouse_move
+        
+        # Override the mouse press event to track drag start position
+        self.video_list.original_mousePressEvent = self.video_list.mousePressEvent
+        self.video_list.mousePressEvent = self._on_video_list_mouse_press
+        
+        # Initialize drag state variables
+        self._drag_start_pos = None
+        self._drag_start_button = None
+
+    def _on_video_list_mouse_press(self, event):
+        """Track mouse press for drag initiation"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_start_pos = event.pos()
+            self._drag_start_button = Qt.MouseButton.LeftButton
+        # Call original mouse press handler
+        self.video_list.original_mousePressEvent(event)
+
+    def _on_video_list_mouse_move(self, event):
+        """Handle mouse move to initiate drag for videos"""
+        # Check if we should start a drag
+        if event.buttons() == Qt.MouseButton.LeftButton and self._drag_start_pos is not None:
+            # Check if drag distance threshold exceeded (similar to videoswarm - 10 pixels)
+            if (event.pos() - self._drag_start_pos).manhattanLength() > 10:
+                # Get the item at the drag start position
+                item = self.video_list.itemAt(self._drag_start_pos)
+                if item:
+                    # Find the corresponding video entry
+                    video_name = item.text()
+                    entry = next((e for e in self.video_files if e["display_name"] == video_name), None)
+                    
+                    if entry:
+                        file_path = entry["original_path"]
+                        
+                        # Get thumbnail pixmap if available
+                        pixmap = None
+                        try:
+                            # Create a simple drag image from the item
+                            item_rect = self.video_list.visualItemRect(item)
+                            if item_rect.isValid():
+                                pixmap = self.video_list.grab(item_rect)
+                        except:
+                            pass
+                        
+                        # Start the drag operation - file will be draggable to external apps
+                        DragDropHelper.create_drag_for_file(
+                            self.video_list,
+                            file_path,
+                            event_pos=event.pos(),
+                            pixmap=pixmap
+                        )
+                        
+                        # Reset drag state
+                        self._drag_start_pos = None
+                        self._drag_start_button = None
+                        return
+        else:
+            # Reset drag state when mouse button is released or moved without button
+            if event.buttons() != Qt.MouseButton.LeftButton:
+                self._drag_start_pos = None
+                self._drag_start_button = None
+        
+        # Call original mouse move handler
+        self.video_list.original_mouseMoveEvent(event)
 
     def on_sort_changed(self, idx):
         if hasattr(self, 'loader') and hasattr(self.loader, 'sort_videos'):
